@@ -1,0 +1,16 @@
+/*
+ * The 'DIGITAL' Font from http://www.urbanfonts.com/fonts/DIGITAL.htm
+ *
+ * The 'DIGITAL' font was created by David Chung, www.geocites.com/dvchung2002
+ * Feel free to use or distribute this font. dvchung@hotmail.com 
+ * 
+ * Copyright 2002.
+ *
+ */
+
+@font-face {
+    font-family: '01 Digitall';
+    src: local('fonts/01digitall/01 Digitall.ttf') format('truetype');        
+    
+}
+

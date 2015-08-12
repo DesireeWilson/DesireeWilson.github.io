@@ -1,0 +1,17 @@
+/*
+ * Web Fonts from thesitewhereyougotit.com
+ *
+ * Font copyright information, which you should 
+ * never delete and should always be included 
+ * in your CSS where ever you call the fonts files. 
+ * Copyrights matter.
+ *
+ */
+
+@font-face {
+    font-family: 'Digitall';
+    src: url('fonts/Digitall.ttf') format('truetype');        
+    font-weight: normal;
+    font-style: normal;
+}
+
