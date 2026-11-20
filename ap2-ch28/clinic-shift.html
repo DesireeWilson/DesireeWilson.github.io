@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ch 28 Clinic Shift: Women's Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f6f8; --card:#ffffff; --ink:#14232f; --muted:#5b6b78; --line:#d9e2e8;
+  --teal:#0f7c7a; --teal-soft:#e2f3f2; --navy:#1d3a52; --good:#1f8a4c; --good-soft:#e5f5ec;
+  --bad:#b8392f; --bad-soft:#fbe9e7; --amber:#b9770e; --amber-soft:#fdf3e1;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.badge{width:46px;height:46px;border-radius:12px;background:var(--navy);display:grid;place-items:center;color:#fff;font-weight:700;font-size:20px}
+.brand h1{margin:0;font-size:1.35rem}
+.brand p{margin:0;color:var(--muted);font-size:.9rem}
+.hud{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.88rem;display:flex;gap:6px;align-items:center}
+.chip b{font-family:"DM Mono",monospace}
+nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+nav.tabs button{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 14px;color:var(--ink);font-weight:500}
+nav.tabs button[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+nav.tabs button .done{color:var(--good);font-weight:700;margin-left:4px}
+nav.tabs button[aria-selected="true"] .done{color:#9be3b8}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 1px 2px rgba(20,35,47,.04)}
+.intro h2{margin-top:0}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.station{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fafcfd;text-align:left;color:var(--ink)}
+.station:hover{border-color:var(--teal);background:var(--teal-soft)}
+.station .ico{font-size:1.6rem}
+.station h3{margin:6px 0 4px;font-size:1.02rem}
+.station p{margin:0;color:var(--muted);font-size:.88rem}
+.btn{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 16px}
+.progress > div{height:100%;background:var(--teal);transition:width .3s}
+/* chart */
+.chart{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.chart .chart-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:.9rem}
+.chart .chart-head span{font-family:"DM Mono",monospace;opacity:.85}
+.chart .chart-body{padding:16px}
+.cc{font-size:1.08rem;font-weight:700;margin:0 0 8px}
+.findings{margin:0;padding-left:0;list-style:none;display:grid;gap:6px}
+.findings li{background:#f6f9fb;border-left:3px solid var(--teal);padding:6px 10px;border-radius:0 8px 8px 0;font-size:.95rem}
+.findings li .lbl{font-family:"DM Mono",monospace;font-size:.75rem;color:var(--teal);text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
+.q{font-weight:700;margin:18px 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--teal);background:var(--teal-soft)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.feedback{margin-top:14px;border-radius:10px;padding:14px 16px;display:none}
+.feedback.show{display:block}
+.feedback.good{background:var(--good-soft);border:1px solid #b8e2c9}
+.feedback.bad{background:var(--bad-soft);border:1px solid #f0c3bd}
+.feedback h4{margin:0 0 6px}
+.feedback .ref{font-family:"DM Mono",monospace;font-size:.78rem;color:var(--muted);margin-top:8px}
+.pearl{margin-top:8px;background:var(--amber-soft);border-radius:8px;padding:8px 10px;font-size:.92rem}
+.pearl b{color:var(--amber)}
+/* route */
+.bank,.track{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border-radius:10px}
+.bank{background:#f6f9fb;border:1px dashed var(--line)}
+.track{background:var(--teal-soft);border:1px solid #bfe2e0;align-items:center}
+.tile{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:500;color:var(--ink)}
+.tile:hover:not(:disabled){border-color:var(--teal)}
+.tile.placed{border-color:var(--teal)}
+.tile.ok{border-color:var(--good);background:var(--good-soft)}
+.tile.no{border-color:var(--bad);background:var(--bad-soft)}
+.tile.target{border-style:dashed}
+.arrow{color:var(--teal);font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+/* lab */
+.timer{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0}
+.timer > div{height:100%;background:var(--amber);width:100%}
+.labcard{text-align:center;padding:26px 16px;border:1px solid var(--line);border-radius:12px;background:#fafcfd}
+.labcard .val{font-family:"DM Mono",monospace;font-size:1.25rem;font-weight:500;margin:6px 0}
+.flagbtns{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.flagbtns button{min-width:150px;padding:14px;border-radius:12px;font-weight:700;border:2px solid}
+.fb-normal{background:var(--good-soft);border-color:var(--good)!important;color:var(--good)}
+.fb-abn{background:var(--bad-soft);border-color:var(--bad)!important;color:var(--bad)}
+/* axis */
+.axis{display:grid;gap:10px}
+.axis-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#f6f9fb;border-radius:10px;padding:10px 12px}
+.axis-row select{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:#fff}
+.axis-row select.ok{border-color:var(--good);background:var(--good-soft)}
+.axis-row select.no{border-color:var(--bad);background:var(--bad-soft)}
+.report table{width:100%;border-collapse:collapse;margin-top:10px}
+.report th,.report td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+.report td.num{font-family:"DM Mono",monospace}
+.stars{font-size:1.6rem;letter-spacing:4px;color:var(--amber)}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:999px;font-weight:500;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:560px){.flagbtns button{min-width:120px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="badge" aria-hidden="true">28</div>
+      <div>
+        <h1>Clinic Shift: The Female Reproductive System</h1>
+        <p>Saladin A&amp;P 10e, Chapter 28 · clinical review activity</p>
+      </div>
+    </div>
+    <div class="hud" aria-live="polite">
+      <div class="chip">Score <b id="hudScore">0</b></div>
+      <div class="chip">Streak <b id="hudStreak">0</b> 🔥</div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ============ DATA ============ */
+const CASES = [
+ {bed:"Women's Health 1", who:"29-year-old patient", cc:"Routine screening; Pap smear result is back",
+  f:[["Pap smear","Cervical intraepithelial neoplasia (CIN), class 2"],["History","No symptoms"],["HPV test","Positive"]],
+  q:"What does this result call for, and what usually causes it?",
+  o:["No follow-up; it's caused by yeast","A biopsy; it's almost always caused by human papillomavirus (HPV)","Immediate hysterectomy; it's caused by estrogen","Antibiotics; it's caused by chlamydia"],a:1,
+  ex:"Cervical cancer is almost always caused by HPV. The Pap smear examines loose cells from the cervix and vagina. Class 1 is mild dysplasia, class 2 calls for a biopsy, and class 3 may call for radiation or hysterectomy.",
+  pearl:"The prognosis is good when it's caught early, which is the whole point of screening. An HPV vaccine is available.",
+  ref:"Slide 16 · Pap Smears and Cervical Cancer"},
+ {bed:"Gyn Clinic", who:"31-year-old patient", cc:"Severe pelvic pain with every period; trying to conceive for 2 years",
+  f:[["History","Pain worsens around menses"],["Laparoscopy","Endometrial-like tissue on the ovaries and pelvic peritoneum"],["Cycle","Regular, 28 days"]],
+  q:"What is the most likely diagnosis, and how is it thought to arise?",
+  o:["Endometriosis, from retrograde menstruation out through the uterine tubes","Cervical cancer, from HPV","Menopause, from follicle depletion","Breast cancer metastasis"],a:0,
+  ex:"Endometriosis is growth of endometrial tissue outside the uterus, on the ovaries, tubes, bladder, peritoneum and even the lungs. It causes pain and sometimes infertility and affects 6–10% of women.",
+  pearl:"It's believed to result from retrograde menstruation, a backward flow of menstrual fluid out of the uterine tubes. The ectopic tissue still responds to the cycle's hormones.",
+  ref:"Slide 76 · Endometriosis"},
+ {bed:"Breast Clinic", who:"47-year-old patient", cc:"Firm lump near the armpit; skin dimpling on the breast",
+  f:[["Exam","Hard, fixed lump in the upper outer breast toward the axilla"],["Skin","Puckering over the lump"],["Nodes","Enlarged axillary lymph nodes"]],
+  q:"Why does the care team examine the axillary lymph nodes so carefully?",
+  o:["They make milk","Lymphatics of the axillary tail are a main route for breast cancer metastasis","They secrete estrogen","They contain the lactiferous sinuses"],a:1,
+  ex:"Breast tumors begin with cells from the mammary ducts and may metastasize through the mammary and axillary lymphatics. The axillary tail's lymphatics are an important route of spread.",
+  pearl:"Warning signs include a lump, skin puckering, changes in skin texture and nipple drainage. Mammograms can detect tumors too small to feel.",
+  ref:"Slides 31, 35–36 · Breasts and Mammary Glands"},
+ {bed:"Genetics", who:"35-year-old patient", cc:"Worried after her aunt's breast cancer diagnosis",
+  f:[["Family history","One aunt with breast cancer"],["Question","“Is breast cancer mostly inherited?”"],["Exam","Normal"]],
+  q:"Which statement is accurate counseling?",
+  o:["Almost all breast cancer is caused by BRCA1 or BRCA2","BRCA1 and BRCA2 raise risk, but most breast cancer is nonhereditary and over 70% of cases have no identifiable risk factor","Breast cancer can't occur without a family history","Only estrogen causes breast cancer"],a:1,
+  ex:"BRCA1 and BRCA2 are breast cancer genes, but most breast cancer is nonhereditary. Over 70% of cases lack identifiable risk factors, so screening matters for everyone.",
+  pearl:"Known risk factors include aging, ionizing radiation, carcinogenic chemicals, excessive alcohol and fat intake, and smoking. Some tumors are stimulated by estrogen.",
+  ref:"Slides 35–36 · Breast cancer"},
+ {bed:"Sports Med", who:"19-year-old distance runner", cc:"No period for 7 months",
+  f:[["Body fat","Very low"],["Pregnancy test","Negative"],["Labs","FSH ↓ · LH ↓ · estradiol ↓"]],
+  q:"Which link in the reproductive axis has shut down?",
+  o:["The uterus has lost its basal layer","Low leptin means the hypothalamus doesn't secrete GnRH, so FSH and LH stay low","The ovaries have run out of follicles","Prolactin is too high from nursing"],a:1,
+  ex:"Leptin acts as an adiposity signal to the brain. If it's too low, GnRH isn't secreted, so the pituitary doesn't release FSH and LH and the ovaries stop cycling.",
+  pearl:"Compare with menopause: there FSH and LH are HIGH because the ovaries can't respond. Here they're LOW because the signal from above is missing.",
+  ref:"Slide 40 · Puberty"},
+ {bed:"Midlife Clinic", who:"52-year-old patient", cc:"Periods stopped a year ago; hot flashes",
+  f:[["Labs","FSH ↑↑ · LH ↑ · estradiol ↓"],["DEXA","Bone density declining"],["Lipids","Cholesterol rising"]],
+  q:"Why is she at higher risk of osteoporosis and cardiovascular disease now?",
+  o:["High FSH damages bone","With few follicles left, estrogen falls. Bone mass declines and cholesterol rises","The uterus releases calcium","Progesterone levels rise sharply"],a:1,
+  ex:"Climacteric begins when about 1,000 follicles remain. They respond poorly to gonadotropins and secrete less estrogen and progesterone, so bone mass declines (osteoporosis risk) and cholesterol rises (cardiovascular risk).",
+  pearl:"Other changes: the uterus, vagina and breasts atrophy, vaginal infections become more common, and the skin thins.",
+  ref:"Slide 44 · Climacteric and Menopause"},
+ {bed:"OB Triage", who:"27-year-old patient", cc:"Period is 5 days late; home test is positive",
+  f:[["Home test","Positive"],["LMP","33 days ago"],["Question","“How can a test know so early?”"]],
+  q:"What hormone does the test detect, and what is its job?",
+  o:["Progesterone, made by the pituitary","Human chorionic gonadotropin (hCG) from the blastocyst, which keeps the corpus luteum secreting progesterone and estrogen","FSH, which grows the embryo","Oxytocin, which starts labor"],a:1,
+  ex:"hCG is secreted by the blastocyst and placenta and is detectable in urine 8–9 days after conception. It stimulates the corpus luteum to double in size and secrete more progesterone and estrogen, which prevents menstruation.",
+  pearl:"Birth is predicted 280 days (40 weeks) from the LMP, the first day of the last menstrual period.",
+  ref:"Slides 83, 86 · Hormones of Pregnancy"},
+ {bed:"OB Clinic", who:"33-year-old patient, 6 weeks pregnant", cc:"Needs surgery that would remove her corpus luteum",
+  f:[["Gestation","6 weeks"],["Ultrasound","Viable pregnancy"],["Plan","Surgical team asks about timing"]],
+  q:"Why is removing the corpus luteum at 6 weeks dangerous for the pregnancy?",
+  o:["It makes hCG","Before about week 7, the corpus luteum is a key source of progesterone and estrogen. Removing it ends the pregnancy","It stores the oocytes","It makes oxytocin"],a:1,
+  ex:"If the corpus luteum is removed before 7 weeks, the pregnancy terminates. From week 7 to week 17 the placenta takes over its endocrine function as the corpus luteum degenerates.",
+  pearl:"Progesterone suppresses uterine contractions and FSH/LH, which prevents premature birth and menstruation during pregnancy.",
+  ref:"Slides 85, 88 · Hormones of Pregnancy"},
+ {bed:"OB Clinic", who:"30-year-old patient, 32 weeks pregnant", cc:"Swollen ankles, new varicose veins and hemorrhoids",
+  f:[["Exam","Pitting edema of both feet"],["BP","Normal"],["Blood volume","≈ 30% above baseline"]],
+  q:"What best explains these lower-body findings?",
+  o:["Heart failure from hCG","The pregnant uterus presses on large pelvic blood vessels and interferes with venous return from the legs","Low blood volume","Too much progesterone in the legs"],a:1,
+  ex:"The pregnant uterus puts pressure on the large pelvic vessels, which interferes with venous return from the legs. That can cause hemorrhoids, varicose veins and edema of the feet.",
+  pearl:"Blood volume rises about 30% (1–2 L extra), and cardiac output rises 30–40% by week 27.",
+  ref:"Slide 95 · Adjustments to Pregnancy"},
+ {bed:"OB Clinic", who:"28-year-old patient, 24 weeks pregnant", cc:"“Why am I breathing so much more?”",
+  f:[["Resp. rate","Normal"],["Tidal volume","Increased"],["ABG","Arterial CO₂ lower than normal"]],
+  q:"What is the physiological purpose of her lower arterial CO₂?",
+  o:["It's a sign of lung disease","Progesterone makes the chemoreceptors more sensitive to CO₂. A lower maternal CO₂ helps CO₂ diffuse from fetal blood into maternal blood","It raises the fetus's pH","It slows her metabolism"],a:1,
+  ex:"Tidal volume and minute ventilation rise about 40% while respiratory rate stays the same. Progesterone increases chemoreceptor sensitivity to CO₂, keeping maternal arterial CO₂ low so the fetus can unload CO₂ across the placenta.",
+  pearl:"Oxygen demand also rises with the mother's metabolic rate and the fetus's needs.",
+  ref:"Slide 96 · Adjustments to Pregnancy"},
+ {bed:"Preconception", who:"26-year-old patient", cc:"Planning to try for a baby in 3 months",
+  f:[["Diet","Few leafy greens"],["Supplements","None"],["Question","“Should I wait until I'm pregnant to start vitamins?”"]],
+  q:"What's the best advice about folic acid?",
+  o:["Start only in the third trimester","Start before pregnancy; folic acid reduces the risk of neural tube defects like spina bifida and anencephaly","Avoid it during pregnancy","It's only needed while breastfeeding"],a:1,
+  ex:"Folic acid reduces the risk of neurological fetal disorders such as spina bifida and anencephaly, and supplements must be started before pregnancy. The neural tube forms very early, often before a woman knows she's pregnant.",
+  pearl:"Vitamin D helps meet fetal calcium demand. Vitamin K is given late in pregnancy and to newborns to prevent hemorrhage.",
+  ref:"Slide 94 · Adjustments to Pregnancy"},
+ {bed:"Newborn Nursery", who:"Newborn, 2 hours old", cc:"Parent asks why the baby needs a vitamin K shot",
+  f:[["Birth","Term, uncomplicated"],["Plan","Routine vitamin K injection"],["Question","“Is this really needed?”"]],
+  q:"What does vitamin K do for the newborn?",
+  o:["Prevents jaundice","Promotes prothrombin synthesis, minimizing the risk of hemorrhage, especially in the brain","Builds bone","Boosts the immune system"],a:1,
+  ex:"Vitamin K is given to newborns (and in late pregnancy) to promote prothrombin synthesis, a clotting factor, which minimizes the risk of neonatal hemorrhage, especially in the brain.",
+  pearl:"Folic acid (neural tube), vitamin D (calcium) and vitamin K (clotting) each protect a different system.",
+  ref:"Slide 94 · Adjustments to Pregnancy"},
+ {bed:"Labor & Delivery", who:"25-year-old patient in labor (first baby)", cc:"Labor has been going for 14 hours; cervix at 7 cm",
+  f:[["Stage","Dilation (first) stage"],["Contractions","Every 3 minutes"],["Question","“Is this taking too long?”"]],
+  q:"Is 14 hours in the dilation stage expected for her?",
+  o:["No; the dilation stage should take under 1 hour","Yes; the dilation stage lasts 8–24 hours in a primipara and is the longest stage","No; dilation is the shortest stage","Yes, but only because she's past 40 weeks"],a:1,
+  ex:"The dilation stage is the longest. It lasts 8–24 hours in a primipara (first birth) but can be a few minutes in a multipara. The cervix dilates to 10 cm and effaces.",
+  pearl:"Expulsion (second stage) takes 30–60 minutes in a primipara. The placental (third) stage follows the birth.",
+  ref:"Slides 108–112 · Stages of Labor"},
+ {bed:"Postpartum", who:"30-year-old patient, 3 days after delivery", cc:"Strong cramping every time she breastfeeds",
+  f:[["Uterus","Firm, shrinking"],["Lochia","Bloody discharge"],["Feeding","Breastfeeding every 2–3 h"]],
+  q:"Why does nursing cause uterine cramps?",
+  o:["Prolactin contracts the uterus","Suckling triggers oxytocin release, which contracts the myometrium and helps the uterus involute faster","Milk flows into the uterus","Estrogen rises during nursing"],a:1,
+  ex:"Breastfeeding stimulates oxytocin secretion, which makes the myometrium contract and firm up the uterus sooner. It also suppresses estrogen, which would make the uterus more flaccid.",
+  pearl:"Involution happens by autolysis. The uterus loses 50% of its weight in the first week, and lochia lasts about 10 days, bloody at first, then serous.",
+  ref:"Slides 113–114 · The Puerperium"},
+ {bed:"Lactation", who:"32-year-old patient, 1 week postpartum", cc:"Decided not to breastfeed; asks when milk will stop",
+  f:[["Feeding","Formula only"],["Breasts","Engorged, improving"],["Question","“Will it ever stop?”"]],
+  q:"What does physiology predict?",
+  o:["Milk continues for 2 years regardless","Without nursing, prolactin surges stop and milk production stops in about 1 week","Milk stops only after menstruation returns","Oxytocin keeps milk production going"],a:1,
+  ex:"Prolactin surges to 10–20× baseline each time an infant nurses, and that drives synthesis for the next feeding. Without nursing, milk production stops in about 1 week.",
+  pearl:"Prolactin makes milk; oxytocin ejects it (letdown via myoepithelial cells).",
+  ref:"Slides 116, 120, 122 · Lactation"},
+ {bed:"Contraception", who:"22-year-old patient", cc:"Starting a combined estrogen–progestin pill",
+  f:[["Question","“How does it actually work?”"],["History","Healthy, nonsmoker"],["Plan","Patient education"]],
+  q:"What is the main mechanism of most hormonal contraceptives?",
+  o:["They kill sperm in the vagina","They inhibit FSH and LH so follicles don't mature and ovulation doesn't occur","They block the uterine tubes","They thicken the endometrium for implantation"],a:1,
+  ex:"Most hormonal methods (pill, patch, injection, vaginal ring) prevent ovulation. Constant estrogen and progestin inhibit FSH and LH by negative feedback, so ovarian follicles don't mature.",
+  pearl:"Contrast: an IUD irritates the uterine lining so it destroys sperm or inhibits their motility. Tubal ligation clamps or cuts the uterine tubes.",
+  ref:"Slides 125–127 · Methods of Contraception"},
+];
+
+const ROUTE = ["Primordial follicle","Primary follicle","Secondary follicle","Tertiary (antral) follicle","Mature (graafian) follicle","Ovulation","Corpus luteum","Corpus albicans"];
+const ROUTE_BONUS = [
+  {q:"Which stage first has a fluid-filled antrum? Click it.", a:"Tertiary (antral) follicle",
+   ex:"About 60 days before ovulation, granulosa cells secrete follicular fluid. The pools merge into a single antrum."},
+  {q:"An hCG pregnancy test works because hCG keeps which structure alive? Click it.", a:"Corpus luteum",
+   ex:"hCG from the blastocyst stimulates the corpus luteum to keep secreting progesterone and estrogen."},
+  {q:"Which stage makes up 90–95% of follicles in an adult ovary? Click it.", a:"Primordial follicle",
+   ex:"Primordial follicles (a primary oocyte with one layer of squamous follicular cells) can wait 13 to 50 years before developing."},
+];
+
+const LABS = [
+  {t:"Cycle length", v:"32 days", n:true, ex:"Cycles average 28 days but vary from 20 to 45."},
+  {t:"Menstrual loss", v:"≈ 40 mL blood + 35 mL serous fluid over 5 days", n:true, ex:"That's the textbook average."},
+  {t:"Menstrual fluid", v:"Passing many large clots", n:false, ex:"Menstrual fluid contains fibrinolysin, so it normally doesn't clot."},
+  {t:"Endometrium, day 5", v:"0.5 mm (basal layer only)", n:true, ex:"At the end of menstruation only the basal layer remains."},
+  {t:"Endometrium, day 24", v:"5–6 mm, glands coiled with glycogen", n:true, ex:"This is the secretory phase under progesterone."},
+  {t:"Vaginal pH", v:"Acidic", n:true, ex:"Bacteria ferment glycogen to lactic acid, and the acid inhibits pathogens."},
+  {t:"Pap smear", v:"CIN class 2", n:false, ex:"Class 2 calls for a biopsy."},
+  {t:"Home pregnancy test", v:"hCG positive 9 days after conception", n:true, ex:"hCG is detectable in urine 8–9 days after conception."},
+  {t:"Pregnancy, 3rd trimester", v:"Glomerular filtration rate +50%", n:true, ex:"GFR rises about 50% to clear maternal and fetal wastes."},
+  {t:"Pregnancy, week 27", v:"Cardiac output 35% above normal", n:true, ex:"Cardiac output rises 30–40% by week 27."},
+  {t:"Uterus, 6 weeks postpartum", v:"Still ≈ 900 g (term size)", n:false, ex:"Involution should return the uterus close to its nonpregnant size (≈50 g)."},
+  {t:"Mammogram", v:"Mass with skin puckering on exam", n:false, ex:"A lump with skin puckering is a warning sign of breast cancer."},
+  {t:"Teen, first year after menarche", v:"Some cycles without ovulation", n:true, ex:"The first few cycles are often anovulatory; regular ovulation begins about a year after menarche."},
+];
+
+const AXIS = [
+  {pre:"Labor: stretching of the cervix sends signals through the spinal cord to the", ans:"Hypothalamus", post:"→"},
+  {pre:"which causes the posterior pituitary to release", ans:"Oxytocin", post:"→ carried by the blood to the uterus."},
+  {pre:"Oxytocin contracts the myometrium and makes fetal membranes produce", ans:"Prostaglandins", post:"(synergists of oxytocin)."},
+  {pre:"Contractions push the fetus down, which causes", ans:"More cervical stretch", post:"→ a self-amplifying (positive feedback) cycle."},
+  {pre:"Nursing: suckling → hypothalamus → oxytocin makes the", ans:"Myoepithelial cells", post:"contract and squeeze milk into the ducts (letdown)."},
+  {pre:"Each nursing session also triggers a surge of", ans:"Prolactin", post:"from the anterior pituitary, which drives milk synthesis for the next feeding."},
+];
+const AXIS_CHOICES = ["Hypothalamus","Oxytocin","Prostaglandins","More cervical stretch","Myoepithelial cells","Prolactin","Progesterone","hCG","Less cervical stretch"];
+const AXIS_CASE = {
+  bed:"Labor & Delivery", who:"29-year-old patient at 41 weeks", cc:"Labor is being induced with an IV oxytocin drip",
+  f:[["Cervix","Ripening, 3 cm"],["Plan","Synthetic oxytocin, dose slowly increased"],["Monitoring","Contractions every 4 → 2 minutes"]],
+  q:"Using the loop you just built, why does a small dose of oxytocin lead to stronger and stronger contractions?",
+  o:["Oxytocin is converted to progesterone","Each contraction stretches the cervix, which triggers more of the mother's own oxytocin, a positive feedback loop","Oxytocin raises hCG","Oxytocin relaxes the uterus between contractions only"],a:1,
+  ex:"Labor runs on positive feedback. Cervical stretch triggers a neuroendocrine reflex (spinal cord → hypothalamus → posterior pituitary → oxytocin), oxytocin and prostaglandins strengthen contractions, and the fetus pushes down to stretch the cervix even more.",
+  pearl:"Near term, the uterus also makes more oxytocin receptors. Progesterone, which inhibits contractions, levels off after 6 months while estradiol, which stimulates them, keeps rising.",
+  ref:"Slides 102–106 · Childbirth"
+};
+
+/* ============ STATE ============ */
+const S = {score:0, streak:0,
+  rounds:{correct:0,total:0,done:false}, route:{correct:0,total:0,done:false},
+  labs:{correct:0,total:0,done:false}, axis:{correct:0,total:0,done:false}};
+const TABS = [["home","Shift Board"],["rounds","Patient Rounds"],["route","Follicle Path"],["labs","Lab Flags"],["axis","Reflex Loops"],["report","Shift Report"]];
+let current = "home";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+function award(ok, pts=10){
+  if(ok){S.streak++; S.score += pts + Math.min(S.streak-1,5)*2; if(S.streak>0 && S.streak%3===0) toast(`🔥 ${S.streak} in a row! Streak bonus`);}
+  else S.streak=0;
+  $("#hudScore").textContent=S.score; $("#hudStreak").textContent=S.streak;
+}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800)}
+
+function renderTabs(){
+  $("#tabs").innerHTML = TABS.map(([id,label])=>{
+    const done = S[id] && S[id].done ? '<span class="done">✓</span>' : '';
+    return `<button role="tab" aria-selected="${id===current}" data-tab="${id}">${label}${done}</button>`}).join("");
+  $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>go(b.dataset.tab));
+}
+function go(id){current=id;renderTabs();clearInterval(labTimer);
+  ({home:viewHome,rounds:viewRounds,route:viewRoute,labs:viewLabs,axis:viewAxis,report:viewReport})[id]();
+  window.scrollTo({top:0,behavior:"smooth"});}
+
+/* ============ HOME ============ */
+function viewHome(){
+  $("#view").innerHTML = `<div class="card intro">
+    <h2>Welcome to your shift 🩺</h2>
+    <p>You're working a clinic shift covering gynecology, breast health, pregnancy, labor, postpartum and lactation. Every patient connects back to a Chapter 28 concept. Earn points for correct calls and keep a streak going for bonus points. Every answer comes with a clinical pearl and the slide reference.</p>
+    <div class="grid4">
+      ${station("rounds","🛏️","Patient Rounds","10 randomized patient cases. Diagnose, then explain the physiology.")}
+      ${station("route","🧭","Follicle Path","Put the follicle's life story in order, then answer clinical questions on your map.")}
+      ${station("labs","🧪","Lab Flags","Rapid-fire: expected or flag it? 10 seconds per result.")}
+      ${station("axis","🔁","Reflex Loops","Build the labor and milk-ejection reflexes, then use them on a patient.")}
+    </div></div>`;
+  document.querySelectorAll(".station").forEach(b=>b.onclick=()=>go(b.dataset.go));
+}
+const station=(id,ico,h,p)=>`<button class="station" data-go="${id}"><div class="ico" aria-hidden="true">${ico}</div><h3>${h}${S[id].done?' ✓':''}</h3><p>${p}</p></button>`;
+
+/* ============ CASE RENDERER (shared) ============ */
+function caseHTML(c, idx, total){
+  const opts = shuffle(c.o.map((t,i)=>({t,i})));
+  return {opts, html:`
+   ${total?`<div class="row spread small muted"><span>Patient ${idx+1} of ${total}</span><span>${S.rounds.correct} correct so far</span></div><div class="progress"><div style="width:${idx/total*100}%"></div></div>`:''}
+   <div class="chart">
+     <div class="chart-head"><strong>${esc(c.who)}</strong><span>${esc(c.bed)}</span></div>
+     <div class="chart-body">
+       <p class="cc">Chief complaint: ${esc(c.cc)}</p>
+       <ul class="findings">${c.f.map(([l,v])=>`<li><span class="lbl">${esc(l)}</span>${esc(v)}</li>`).join("")}</ul>
+       <p class="q">${esc(c.q)}</p>
+       <div class="opts">${opts.map((o,k)=>`<button class="opt" data-i="${o.i}">${String.fromCharCode(65+k)}. ${esc(o.t)}</button>`).join("")}</div>
+       <div class="feedback" id="fb" aria-live="polite"></div>
+     </div>
+   </div>`};
+}
+function wireCase(c, onDone){
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const pick=+b.dataset.i, ok = pick===c.a;
+    document.querySelectorAll(".opt").forEach(x=>{x.disabled=true; if(+x.dataset.i===c.a) x.classList.add("right");});
+    if(!ok) b.classList.add("wrong");
+    award(ok);
+    const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+    fb.innerHTML=`<h4>${ok?"✅ Good call.":"❌ Not quite. Here's the reasoning."}</h4><div>${esc(c.ex)}</div>
+      <div class="pearl"><b>Clinical pearl:</b> ${esc(c.pearl)}</div><div class="ref">${esc(c.ref)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="nextBtn">Continue →</button></div>`;
+    $("#nextBtn").onclick=()=>onDone(ok); $("#nextBtn").focus();
+  });
+}
+
+/* ============ ROUNDS ============ */
+let roundDeck=[], roundIdx=0;
+function viewRounds(){
+  if(!roundDeck.length || S.rounds.done){
+    $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🛏️ Patient Rounds</h2>
+      <p>You'll see <b>10 patients</b> drawn at random from a pool of ${CASES.length}. Read each chart, then make the call. Replay any time for a different mix.</p>
+      ${S.rounds.done?`<p class="muted">Last run: ${S.rounds.correct}/${S.rounds.total} correct.</p>`:''}
+      <button class="btn" id="startR">${S.rounds.done?"Start a new set":"Start rounds"}</button></div>`;
+    $("#startR").onclick=()=>{roundDeck=shuffle(CASES).slice(0,10);roundIdx=0;S.rounds={correct:0,total:0,done:false};renderRound()};
+    return;
+  }
+  renderRound();
+}
+function renderRound(){
+  const c=roundDeck[roundIdx]; const {html}=caseHTML(c,roundIdx,roundDeck.length);
+  $("#view").innerHTML=`<div class="card">${html}</div>`;
+  wireCase(c, ok=>{S.rounds.total++; if(ok) S.rounds.correct++; roundIdx++;
+    if(roundIdx>=roundDeck.length){S.rounds.done=true;roundDeck=[];renderTabs();
+      $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Rounds complete 🎉</h2><p>You got <b>${S.rounds.correct} of ${S.rounds.total}</b> patients right.</p><div class="row"><button class="btn" data-go="route">Next station: Follicle Path →</button><button class="btn ghost" data-go="rounds">Another set</button></div></div>`;
+      document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+    } else renderRound();
+  });
+}
+
+/* ============ ROUTE ============ */
+let placed=[], bonusIdx=0, routePhase="order";
+function viewRoute(){placed=[];bonusIdx=0;routePhase="order";S.route={correct:0,total:0,done:false};renderRoute()}
+function renderRoute(){
+  const bank = shuffle(ROUTE.filter(x=>!placed.includes(x)));
+  if(routePhase==="order"){
+    $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧭 Follicle Path</h2>
+     <p>Trace one follicle from its resting state through ovulation and beyond. <b>Tap the stages in order.</b> Tap a placed tile to send it back.</p>
+     <p class="small muted">Track (${placed.length}/${ROUTE.length})</p>
+     <div class="track" id="track">${placed.length?placed.map((p,i)=>`${i?'<span class="arrow">→</span>':''}<button class="tile placed" data-back="${esc(p)}">${esc(p)}</button>`).join(""):'<span class="muted small">Start with the resting follicle…</span>'}</div>
+     <p class="small muted" style="margin-top:14px">Structure bank</p>
+     <div class="bank">${bank.map(b=>`<button class="tile" data-add="${esc(b)}">${esc(b)}</button>`).join("")||'<span class="muted small">All placed!</span>'}</div>
+     <div class="row" style="margin-top:16px"><button class="btn" id="checkRoute" ${placed.length<ROUTE.length?'disabled':''}>Check my route</button><button class="btn ghost" id="resetRoute">Reset</button></div>
+     <div class="feedback" id="fb"></div></div>`;
+    document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{placed.push(b.dataset.add);renderRoute()});
+    document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>{placed=placed.filter(x=>x!==b.dataset.back);renderRoute()});
+    $("#resetRoute").onclick=()=>{placed=[];renderRoute()};
+    $("#checkRoute").onclick=checkRoute;
+  }
+}
+function checkRoute(){
+  let right=0;
+  document.querySelectorAll("#track .tile").forEach((t,i)=>{t.disabled=true;const ok=placed[i]===ROUTE[i];if(ok)right++;t.classList.add(ok?"ok":"no")});
+  const ok = right===ROUTE.length; S.route.total++; if(ok)S.route.correct++; award(ok,15);
+  document.querySelectorAll("[data-add],#checkRoute,#resetRoute").forEach(b=>b.disabled=true);
+  const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+  fb.innerHTML=`<h4>${ok?"✅ Perfect route!":`❌ ${right}/${ROUTE.length} in the right position.`}</h4>
+   <div><b>Correct order:</b> ${ROUTE.map(esc).join(" → ")}</div>
+   <div class="pearl"><b>Clinical pearl:</b> The follicle that ovulates this month was activated about 290 days earlier. A new cohort of 20–25 follicles is recruited every month, and only one usually becomes dominant.</div>
+   <div class="ref">Slides 55–58, 66–68 · 28.3b Folliculogenesis</div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="toBonus">Clinical follow-ups →</button></div>`;
+  $("#toBonus").onclick=()=>{routePhase="bonus";renderBonus()};
+}
+function renderBonus(){
+  const b=ROUTE_BONUS[bonusIdx];
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧭 Clinical follow-up ${bonusIdx+1} of ${ROUTE_BONUS.length}</h2>
+   <p class="q">${esc(b.q)}</p>
+   <div class="track">${ROUTE.map((p,i)=>`${i?'<span class="arrow">→</span>':''}<button class="tile target" data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div>
+   <div class="feedback" id="fb"></div></div>`;
+  document.querySelectorAll("[data-p]").forEach(t=>t.onclick=()=>{
+    const ok=t.dataset.p===b.a; S.route.total++; if(ok)S.route.correct++; award(ok);
+    document.querySelectorAll("[data-p]").forEach(x=>{x.disabled=true;if(x.dataset.p===b.a)x.classList.add("ok")}); if(!ok)t.classList.add("no");
+    const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+    const last=bonusIdx===ROUTE_BONUS.length-1;
+    fb.innerHTML=`<h4>${ok?"✅ Correct.":"❌ The answer is the "+esc(b.a)+"."}</h4><div>${esc(b.ex)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="nb">${last?"Finish station":"Next →"}</button></div>`;
+    $("#nb").onclick=()=>{ if(last){S.route.done=true;renderTabs();
+        $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Follicle path mapped 🎉</h2><p>${S.route.correct}/${S.route.total} correct at this station.</p><div class="row"><button class="btn" data-go="labs">Next station: Lab Flags →</button><button class="btn ghost" data-go="route">Redo</button></div></div>`;
+        document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+      } else {bonusIdx++;renderBonus()} };
+    $("#nb").focus();
+  });
+}
+
+/* ============ LABS ============ */
+let labDeck=[], labIdx=0, labTimer=null, labLeft=0;
+const LAB_SECS=10;
+function viewLabs(){
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧪 Lab Flags</h2>
+   <p>Results are coming off the analyzer. For each one, decide whether it's <b>Expected</b> or should be <b>Flagged</b> before the timer runs out (${LAB_SECS} s). Running out of time counts as a miss.</p>
+   <p class="small muted">Tip: keyboard works too. <b>N</b> = expected, <b>A</b> = flag it.</p>
+   ${S.labs.done?`<p class="muted">Last run: ${S.labs.correct}/${S.labs.total}.</p>`:''}
+   <button class="btn" id="startL">Start the queue</button></div>`;
+  $("#startL").onclick=()=>{labDeck=shuffle(LABS).slice(0,10);labIdx=0;S.labs={correct:0,total:0,done:false};renderLab()};
+}
+function renderLab(){
+  const L=labDeck[labIdx];
+  $("#view").innerHTML=`<div class="card">
+   <div class="row spread small muted"><span>Result ${labIdx+1} of ${labDeck.length}</span><span>${S.labs.correct} correct</span></div>
+   <div class="timer"><div id="tbar"></div></div>
+   <div class="labcard"><div class="muted small">${esc(L.t)}</div><div class="val">${esc(L.v)}</div></div>
+   <div class="flagbtns"><button class="fb-normal" data-n="1">✓ Expected</button><button class="fb-abn" data-n="0">⚠ Flag it</button></div>
+   <div class="feedback" id="fb"></div></div>`;
+  labLeft=LAB_SECS*10; const bar=$("#tbar");
+  clearInterval(labTimer);
+  labTimer=setInterval(()=>{labLeft--;bar.style.width=(labLeft/(LAB_SECS*10)*100)+"%";if(labLeft<=0){answerLab(null)}},100);
+  document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>answerLab(b.dataset.n==="1"));
+}
+function answerLab(choice){
+  clearInterval(labTimer);
+  if(!$("#fb")||$("#fb").classList.contains("show")) return;
+  const L=labDeck[labIdx]; const ok = choice===L.n;
+  S.labs.total++; if(ok)S.labs.correct++; award(ok,8);
+  document.querySelectorAll("[data-n]").forEach(b=>b.disabled=true);
+  const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+  const last=labIdx===labDeck.length-1;
+  fb.innerHTML=`<h4>${choice===null?"⏱ Time's up!":ok?"✅ Correct flag.":"❌ Wrong flag."} This result is <b>${L.n?"EXPECTED":"A RED FLAG"}</b>.</h4><div>${esc(L.ex)}</div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="nl">${last?"Finish queue":"Next result →"}</button></div>`;
+  $("#nl").onclick=()=>{ if(last){S.labs.done=true;renderTabs();
+      $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Queue cleared 🎉</h2><p>${S.labs.correct}/${S.labs.total} flags correct.</p><div class="row"><button class="btn" data-go="axis">Next station: Reflex Loops →</button><button class="btn ghost" data-go="labs">Run again</button></div></div>`;
+      document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+    } else {labIdx++;renderLab()} };
+  $("#nl").focus();
+}
+document.addEventListener("keydown",e=>{
+  if(current!=="labs"||!$("[data-n]")||$("[data-n]").disabled) return;
+  if(e.key==="n"||e.key==="N") answerLab(true);
+  if(e.key==="a"||e.key==="A") answerLab(false);
+});
+
+/* ============ AXIS ============ */
+function viewAxis(){
+  S.axis={correct:0,total:0,done:false};
+  const choices=shuffle(AXIS_CHOICES);
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🔁 Build the Reflex Loops</h2>
+   <p>Complete the labor (positive feedback) and milk-ejection reflexes. Each blank uses a different answer, and some choices are distractors.</p>
+   <div class="axis">${AXIS.map((r,i)=>`<div class="axis-row"><span>${esc(r.pre)}</span>
+     <select data-i="${i}" aria-label="Blank ${i+1}"><option value="">— choose —</option>${choices.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+     <span>${esc(r.post)}</span></div>`).join("")}</div>
+   <div class="row" style="margin-top:16px"><button class="btn" id="checkAxis">Check loops</button></div>
+   <div class="feedback" id="fb"></div></div>`;
+  $("#checkAxis").onclick=()=>{
+    const sels=[...document.querySelectorAll(".axis select")];
+    if(sels.some(s=>!s.value)){toast("Fill every blank first");return}
+    let right=0; sels.forEach(s=>{const ok=s.value===AXIS[+s.dataset.i].ans; if(ok)right++; s.classList.add(ok?"ok":"no"); s.disabled=true;});
+    S.axis.total+=AXIS.length; S.axis.correct+=right; award(right===AXIS.length,15);
+    $("#checkAxis").disabled=true;
+    const fb=$("#fb"); fb.className="feedback show "+(right===AXIS.length?"good":"bad");
+    fb.innerHTML=`<h4>${right===AXIS.length?"✅ Loops complete!":`${right}/${AXIS.length} correct.`}</h4>
+     <div>${AXIS.map(r=>`${esc(r.pre)} <b>${esc(r.ans)}</b> ${esc(r.post)}`).join("<br>")}</div>
+     <div class="pearl"><b>Clinical pearl:</b> Labor is one of the body's few <i>positive</i> feedback loops: the response amplifies the stimulus until the baby is delivered. That's the key to your next patient.</div>
+     <div class="ref">Slides 105–106, 120–122 · Labor contractions, Milk ejection</div>
+     <div class="row" style="margin-top:12px"><button class="btn" id="toAxisCase">See the patient →</button></div>`;
+    $("#toAxisCase").onclick=axisCase;
+  };
+}
+function axisCase(){
+  const {html}=caseHTML(AXIS_CASE);
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🔁 Apply it</h2>${html}</div>`;
+  wireCase(AXIS_CASE, ok=>{S.axis.total++; if(ok)S.axis.correct++; S.axis.done=true; renderTabs(); go("report")});
+}
+
+/* ============ REPORT ============ */
+function viewReport(){
+  const rows=[["Patient Rounds","rounds"],["Follicle Path","route"],["Lab Flags","labs"],["Reflex Loops","axis"]];
+  const c=rows.reduce((a,[,k])=>a+S[k].correct,0), t=rows.reduce((a,[,k])=>a+S[k].total,0);
+  const pct = t? Math.round(c/t*100):0;
+  const stars = t? (pct>=90?5:pct>=80?4:pct>=70?3:pct>=55?2:1):0;
+  const title = !t?"Shift not started": pct>=90?"Attending-level performance":pct>=80?"Chief resident material":pct>=70?"Solid intern shift":pct>=55?"Keep reviewing those charts":"Time for a study session with Ch. 28";
+  const allDone=rows.every(([,k])=>S[k].done);
+  $("#view").innerHTML=`<div class="card report"><h2 style="margin-top:0">📋 Shift Report</h2>
+   <div class="stars" aria-label="${stars} of 5 stars">${"★".repeat(stars)}${"☆".repeat(5-stars)}</div>
+   <p style="font-size:1.1rem;margin:4px 0"><b>${title}</b></p>
+   <p class="muted">Total score <b>${S.score}</b> · ${c}/${t} correct (${pct}%)${allDone?"":" · some stations not finished yet"}</p>
+   <table><thead><tr><th>Station</th><th>Correct</th><th>Status</th></tr></thead><tbody>
+   ${rows.map(([n,k])=>`<tr><td>${n}</td><td class="num">${S[k].correct}/${S[k].total}</td><td>${S[k].done?"✓ Complete":`<button class="btn ghost" data-go="${k}" style="padding:4px 10px">Go</button>`}</td></tr>`).join("")}
+   </tbody></table>
+   <div class="row" style="margin-top:16px"><button class="btn" id="restart">Start a new shift</button></div></div>`;
+  document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+  $("#restart").onclick=()=>{Object.assign(S,{score:0,streak:0,rounds:{correct:0,total:0,done:false},route:{correct:0,total:0,done:false},labs:{correct:0,total:0,done:false},axis:{correct:0,total:0,done:false}});roundDeck=[];$("#hudScore").textContent=0;$("#hudStreak").textContent=0;go("home")};
+}
+
+renderTabs(); viewHome();
+</script>
+</body>
+</html>
