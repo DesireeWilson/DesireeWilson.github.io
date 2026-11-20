@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ch 29 Clinic Shift: Development and Aging</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f6f8; --card:#ffffff; --ink:#14232f; --muted:#5b6b78; --line:#d9e2e8;
+  --teal:#0f7c7a; --teal-soft:#e2f3f2; --navy:#1d3a52; --good:#1f8a4c; --good-soft:#e5f5ec;
+  --bad:#b8392f; --bad-soft:#fbe9e7; --amber:#b9770e; --amber-soft:#fdf3e1;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.badge{width:46px;height:46px;border-radius:12px;background:var(--navy);display:grid;place-items:center;color:#fff;font-weight:700;font-size:20px}
+.brand h1{margin:0;font-size:1.35rem}
+.brand p{margin:0;color:var(--muted);font-size:.9rem}
+.hud{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.88rem;display:flex;gap:6px;align-items:center}
+.chip b{font-family:"DM Mono",monospace}
+nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+nav.tabs button{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 14px;color:var(--ink);font-weight:500}
+nav.tabs button[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+nav.tabs button .done{color:var(--good);font-weight:700;margin-left:4px}
+nav.tabs button[aria-selected="true"] .done{color:#9be3b8}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 1px 2px rgba(20,35,47,.04)}
+.intro h2{margin-top:0}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.station{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fafcfd;text-align:left;color:var(--ink)}
+.station:hover{border-color:var(--teal);background:var(--teal-soft)}
+.station .ico{font-size:1.6rem}
+.station h3{margin:6px 0 4px;font-size:1.02rem}
+.station p{margin:0;color:var(--muted);font-size:.88rem}
+.btn{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 16px}
+.progress > div{height:100%;background:var(--teal);transition:width .3s}
+/* chart */
+.chart{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.chart .chart-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:.9rem}
+.chart .chart-head span{font-family:"DM Mono",monospace;opacity:.85}
+.chart .chart-body{padding:16px}
+.cc{font-size:1.08rem;font-weight:700;margin:0 0 8px}
+.findings{margin:0;padding-left:0;list-style:none;display:grid;gap:6px}
+.findings li{background:#f6f9fb;border-left:3px solid var(--teal);padding:6px 10px;border-radius:0 8px 8px 0;font-size:.95rem}
+.findings li .lbl{font-family:"DM Mono",monospace;font-size:.75rem;color:var(--teal);text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
+.q{font-weight:700;margin:18px 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--teal);background:var(--teal-soft)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.feedback{margin-top:14px;border-radius:10px;padding:14px 16px;display:none}
+.feedback.show{display:block}
+.feedback.good{background:var(--good-soft);border:1px solid #b8e2c9}
+.feedback.bad{background:var(--bad-soft);border:1px solid #f0c3bd}
+.feedback h4{margin:0 0 6px}
+.feedback .ref{font-family:"DM Mono",monospace;font-size:.78rem;color:var(--muted);margin-top:8px}
+.pearl{margin-top:8px;background:var(--amber-soft);border-radius:8px;padding:8px 10px;font-size:.92rem}
+.pearl b{color:var(--amber)}
+/* route */
+.bank,.track{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border-radius:10px}
+.bank{background:#f6f9fb;border:1px dashed var(--line)}
+.track{background:var(--teal-soft);border:1px solid #bfe2e0;align-items:center}
+.tile{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:500;color:var(--ink)}
+.tile:hover:not(:disabled){border-color:var(--teal)}
+.tile.placed{border-color:var(--teal)}
+.tile.ok{border-color:var(--good);background:var(--good-soft)}
+.tile.no{border-color:var(--bad);background:var(--bad-soft)}
+.tile.target{border-style:dashed}
+.arrow{color:var(--teal);font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+/* lab */
+.timer{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0}
+.timer > div{height:100%;background:var(--amber);width:100%}
+.labcard{text-align:center;padding:26px 16px;border:1px solid var(--line);border-radius:12px;background:#fafcfd}
+.labcard .val{font-family:"DM Mono",monospace;font-size:1.25rem;font-weight:500;margin:6px 0}
+.flagbtns{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.flagbtns button{min-width:150px;padding:14px;border-radius:12px;font-weight:700;border:2px solid}
+.fb-normal{background:var(--good-soft);border-color:var(--good)!important;color:var(--good)}
+.fb-abn{background:var(--bad-soft);border-color:var(--bad)!important;color:var(--bad)}
+/* axis */
+.axis{display:grid;gap:10px}
+.axis-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#f6f9fb;border-radius:10px;padding:10px 12px}
+.axis-row select{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:#fff}
+.axis-row select.ok{border-color:var(--good);background:var(--good-soft)}
+.axis-row select.no{border-color:var(--bad);background:var(--bad-soft)}
+.report table{width:100%;border-collapse:collapse;margin-top:10px}
+.report th,.report td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+.report td.num{font-family:"DM Mono",monospace}
+.stars{font-size:1.6rem;letter-spacing:4px;color:var(--amber)}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:999px;font-weight:500;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:560px){.flagbtns button{min-width:120px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="badge" aria-hidden="true">29</div>
+      <div>
+        <h1>Clinic Shift: Human Development and Aging</h1>
+        <p>Saladin A&amp;P 10e, Chapter 29 · clinical review activity</p>
+      </div>
+    </div>
+    <div class="hud" aria-live="polite">
+      <div class="chip">Score <b id="hudScore">0</b></div>
+      <div class="chip">Streak <b id="hudStreak">0</b> 🔥</div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ============ DATA ============ */
+const CASES = [
+ {bed:"ED Bay 3", who:"26-year-old patient", cc:"Sharp right-sided pelvic pain; period is 2 weeks late",
+  f:[["hCG","Positive"],["Ultrasound","No pregnancy inside the uterus; mass in the right uterine tube"],["Vitals","Heart rate rising, mild dizziness"]],
+  q:"What is the most likely diagnosis, and why is it dangerous?",
+  o:["Normal implantation that is just painful","Ectopic pregnancy: the blastocyst implanted in the uterine tube, which can't stretch and may rupture and bleed","Monozygotic twins","Endometriosis"],a:1,
+  ex:"Normally the blastocyst implants in the uterine wall about a week after fertilization. When it implants in the uterine tube instead (an ectopic pregnancy), the tube can't expand with the growing embryo and may rupture, causing severe internal bleeding.",
+  pearl:"Fertilization normally happens in the uterine tube; cilia and muscle contractions then carry the conceptus to the uterus during cleavage.",
+  ref:"Slides 3, 7, 9 · Fertilization, Implantation"},
+ {bed:"NICU", who:"Newborn, day 1", cc:"Fluid-filled sac over the lower back",
+  f:[["Exam","Exposed spinal tissue in a lumbar sac"],["Legs","Reduced movement"],["Prenatal history","No vitamins until the second month of pregnancy"]],
+  q:"Which developmental event failed, and when does it happen?",
+  o:["Gastrulation on day 16","The neural tube failed to close fully during week 4 (spina bifida)","The foramen ovale failed to close at birth","Cleavage in the uterine tube"],a:1,
+  ex:"During week 4 the flat embryonic disc folds and the neural tube forms. It becomes the brain and spinal cord. If part of it doesn't close, the result is a neural tube defect such as spina bifida.",
+  pearl:"Folic acid lowers the risk of neural tube defects, but it has to be started BEFORE pregnancy because the tube closes before many people know they're pregnant.",
+  ref:"Slide 12 · Week 4 folding"},
+ {bed:"OB Clinic", who:"29-year-old patient, 6 weeks pregnant", cc:"Was prescribed a medication known to cause birth defects",
+  f:[["Gestation","Week 6 of embryonic development"],["Question","“Would it matter less if I took it in the third trimester?”"],["Plan","Medication review"]],
+  q:"Why is week 6 the riskiest time for a teratogen?",
+  o:["The placenta isn't formed until week 6","Weeks 3 to 8 are when organs are forming, so a teratogen can derail organ development","The fetus is largest at week 6","Teratogens only work after birth"],a:1,
+  ex:"Teratogens cause the most damage in weeks 3 to 8, the embryonic period, when organs are forming. Thalidomide taken then caused missing or unformed limbs.",
+  pearl:"The three classes of teratogens are drugs and chemicals, infections, and radiation.",
+  ref:"Slide 18 · Teratogens"},
+ {bed:"Newborn Clinic", who:"Newborn, 3 days old", cc:"Small head, thin upper lip, smooth groove under the nose",
+  f:[["Growth","Below expected weight and length"],["Prenatal history","Regular alcohol use during pregnancy"],["Exam","Distinct facial features"]],
+  q:"What is the most likely cause?",
+  o:["Down syndrome","Fetal alcohol syndrome; alcohol crosses the placenta and is the drug that causes the most birth defects","Turner syndrome","Lack of surfactant"],a:1,
+  ex:"Alcohol causes more birth defects than any other drug. It crosses the placenta easily because the barrier is thin enough for nicotine, alcohol and most drugs to pass.",
+  pearl:"The placenta exchanges materials without mixing maternal and fetal blood, but it is not a filter for most drugs.",
+  ref:"Slides 15, 18 · Placenta, Teratogens"},
+ {bed:"Ultrasound", who:"31-year-old patient, 20 weeks pregnant", cc:"Twins: one boy and one girl",
+  f:[["Ultrasound","Two fetuses, two separate placentas"],["Sexes","One male, one female"],["Question","“Are they identical?”"]],
+  q:"What kind of twins are these?",
+  o:["Monozygotic (identical): one zygote split","Dizygotic (fraternal): two eggs fertilized by two sperm","Conjoined twins","It's impossible to tell"],a:1,
+  ex:"Twins of different sexes must be dizygotic: two separate eggs fertilized by two separate sperm. They're genetically as alike as any siblings. About two-thirds of twins are dizygotic.",
+  pearl:"Monozygotic twins come from one zygote whose embryoblast splits, so they are always the same sex.",
+  ref:"Slide 8 · Twins"},
+ {bed:"IVF Lab", who:"Embryology lab report", cc:"One fertilized egg has 69 chromosomes",
+  f:[["Karyotype","69 chromosomes (three sets)"],["Observation","Two sperm entered the egg"],["Status","Not viable"]],
+  q:"Which protective mechanism failed?",
+  o:["Capacitation","The fast and slow blocks to polyspermy","Cleavage","Gastrulation"],a:1,
+  ex:"Normally the egg's membrane charge changes within moments (fast block), then enzymes destroy the sperm-binding protein ZP3 (slow block). If both fail, two sperm fertilize the egg (polyspermy) and the embryo can't develop normally.",
+  pearl:"Only one sperm should merge its nucleus with the egg's to make one diploid set (46 chromosomes) in the zygote.",
+  ref:"Slides 4–5 · Fertilization, Blocks to polyspermy"},
+ {bed:"Prenatal Genetics", who:"41-year-old patient, 12 weeks pregnant", cc:"Asks why her age raises the risk of Down syndrome",
+  f:[["Screening","Increased-risk result"],["Plan","Diagnostic testing offered"],["Question","“Why does age matter?”"]],
+  q:"What's the best explanation?",
+  o:["Older sperm are more likely to carry an extra chromosome 21","Older eggs separate their chromosomes less reliably during meiosis (nondisjunction)","The placenta adds a chromosome","Down syndrome is caused by a teratogen"],a:1,
+  ex:"Down syndrome is trisomy 21: an extra chromosome 21 from nondisjunction, when a chromosome pair fails to separate in meiosis. Older eggs are more prone to it, so risk rises with maternal age.",
+  pearl:"Klinefelter syndrome (XXY) and Turner syndrome (XO) are other results of nondisjunction.",
+  ref:"Slide 19 · Chromosome errors"},
+ {bed:"Endocrine", who:"15-year-old patient", cc:"Short stature; no breast development or periods yet",
+  f:[["Exam","Short; broad chest; no signs of puberty"],["Karyotype","45,X"],["Ovaries","Underdeveloped"]],
+  q:"Which chromosomal condition is this?",
+  o:["Trisomy 21","Turner syndrome: monosomy X (XO)","Klinefelter syndrome (XXY)","Triploidy"],a:1,
+  ex:"Turner syndrome (XO) results from nondisjunction that leaves a cell missing one sex chromosome: a monosomy.",
+  pearl:"Trisomy means one extra chromosome; monosomy means one missing.",
+  ref:"Slide 19 · Chromosome errors"},
+ {bed:"NICU", who:"Newborn, born at 28 weeks", cc:"Grunting, fast breathing, chest retracting with each breath",
+  f:[["Chest X-ray","Collapsed alveoli"],["Gestation","28 weeks"],["Oxygen","Needs support"]],
+  q:"What is the most likely cause of the breathing trouble?",
+  o:["The ductus venosus closed too early","The lungs lack enough surfactant to keep the alveoli open (respiratory distress)","Too many maternal antibodies","An extra chromosome 21"],a:1,
+  ex:"Inflating collapsed lungs at birth takes great effort even with surfactant. Premature babies often haven't made enough surfactant yet, so their alveoli collapse: respiratory distress.",
+  pearl:"The first breath is triggered by CO₂ buildup after the umbilical cord is cut.",
+  ref:"Slide 17 · Adapting at birth"},
+ {bed:"NICU", who:"Premature infant, 2 weeks old", cc:"Continuous heart murmur and fast breathing",
+  f:[["Echocardiogram","Blood flowing between the aorta and pulmonary trunk"],["Gestation at birth","30 weeks"],["Lungs","Getting extra blood flow"]],
+  q:"Which fetal shunt failed to close?",
+  o:["Foramen ovale","Ductus arteriosus (patent ductus arteriosus)","Ductus venosus","Umbilical vein"],a:1,
+  ex:"Before birth, the ductus arteriosus routes blood from the pulmonary trunk to the aorta, skipping the lungs. After birth it should close and become a ligament. If it stays open (PDA), blood flows between the vessels the wrong way and overloads the lungs.",
+  pearl:"The foramen ovale (right to left atrium) should become a shallow depression; the ductus venosus lets blood bypass the immature liver.",
+  ref:"Slides 16–17 · Fetal circulation"},
+ {bed:"Pediatrics", who:"4-month-old infant", cc:"Parent asks why the baby hasn't caught any colds",
+  f:[["Feeding","Breastfed"],["Health","No infections so far"],["Vaccines","Up to date"]],
+  q:"What gives a newborn early protection?",
+  o:["The baby's own fully mature immune system","Antibodies from the mother, which protect for about 6 months","Surfactant","The ductus arteriosus"],a:1,
+  ex:"Maternal antibodies passed to the baby protect it for about the first 6 months while its own immune system matures.",
+  pearl:"Breast milk (especially colostrum) adds more antibodies.",
+  ref:"Slide 17 · Adapting at birth"},
+ {bed:"Geriatrics", who:"78-year-old patient", cc:"Fractured hip after a minor fall",
+  f:[["DEXA","Low bone mass"],["Strength","Grip strength much lower than in middle age"],["Activity","Sedentary"]],
+  q:"Which intervention has the best evidence for preventing the next fracture?",
+  o:["Complete bed rest","Resistance (strength) exercise along with good nutrition","Avoiding all calcium","Waiting for bones to regrow on their own"],a:1,
+  ex:"Bones lose mass and muscle strength declines with age. Exercise and nutrition are the best ways to slow aging, and resistance exercise in particular reduces bone fractures.",
+  pearl:"Senescence is the decline after peak efficiency, and organ systems decline at different rates.",
+  ref:"Slides 21, 23 · Aging, Exercise"},
+ {bed:"Geriatrics", who:"72-year-old patient", cc:"“Why do my cells age at all?”",
+  f:[["Question","Asking about cell aging"],["History","Healthy, active"],["Family","Parents lived into their 90s"]],
+  q:"Which theory says cells can only divide a limited number of times?",
+  o:["Collagen cross-linking","Telomere shortening: chromosome end caps get shorter with each division","Fast block","Capacitation"],a:1,
+  ex:"Telomeres cap the ends of chromosomes and shorten with each cell division, which limits how many more times a cell can divide.",
+  pearl:"Other theories include DNA damage building up, collagen cross-linking (stiff joints, lenses and arteries) and heredity.",
+  ref:"Slide 22 · Theories of aging"},
+ {bed:"Fertility", who:"34-year-old couple", cc:"Very low sperm count and poor sperm motility",
+  f:[["Semen analysis","Few motile sperm"],["Partner","Normal ovulation"],["Plan","Assisted reproduction"]],
+  q:"Which technique best works around sperm that can't reach or penetrate the egg?",
+  o:["Intrauterine insemination (IUI) alone","IVF with intracytoplasmic sperm injection (ICSI): a single sperm is injected directly into the egg","Hormonal contraception","Waiting for capacitation"],a:1,
+  ex:"With ICSI, part of IVF, eggs are collected and a single sperm is injected into each one in the lab. The embryos are then placed in the uterus.",
+  pearl:"IUI places sperm directly in the uterus, but it still depends on the sperm swimming to and penetrating the egg.",
+  ref:"Slide 24 · Assisted reproduction"},
+];
+
+const ROUTE = ["Fertilization (zygote)","Cleavage","Morula","Blastocyst","Implantation","Gastrulation (3 germ layers)","Neural tube and body folding","Fetal period begins","Birth"];
+const ROUTE_BONUS = [
+  {q:"Which stage implants in the uterine wall? Click it.", a:"Blastocyst",
+   ex:"The blastocyst's outer trophoblast grows rootlike into the endometrium. It becomes part of the placenta, while the inner cell mass becomes the embryo."},
+  {q:"At which step does the conceptus first count as an embryo (about day 16, 2 mm)? Click it.", a:"Gastrulation (3 germ layers)",
+   ex:"Gastrulation forms ectoderm, mesoderm and endoderm. By day 16 it's an embryo, and the embryonic period (weeks 3 to 8) is when teratogens do the most harm."},
+  {q:"Folic acid protects mainly against defects at which step? Click it.", a:"Neural tube and body folding",
+   ex:"In week 4 the neural tube forms; it becomes the brain and spinal cord. Incomplete closure causes spina bifida and similar defects."},
+];
+
+const LABS = [
+  {t:"Home pregnancy test", v:"Negative 5 days after conception", n:true, ex:"Expected. hCG isn't detectable until the blastocyst has implanted, about 8–9 days after conception."},
+  {t:"Ultrasound", v:"Blastocyst implanted in the uterine tube", n:false, ex:"Ectopic pregnancy: the tube may rupture and bleed."},
+  {t:"Embryo, day 16", v:"About 2 mm long with three germ layers", n:true, ex:"Gastrulation makes it an embryo."},
+  {t:"Karyotype", v:"47,XX,+21", n:false, ex:"Trisomy 21 (Down syndrome) from nondisjunction."},
+  {t:"Karyotype", v:"45,X", n:false, ex:"Monosomy X (Turner syndrome)."},
+  {t:"Prenatal history", v:"Folic acid started after the second missed period", n:false, ex:"Too late for the neural tube, which forms in week 4. Start before pregnancy."},
+  {t:"Prenatal history", v:"Daily alcohol in weeks 3–8", n:false, ex:"Teratogen exposure in the embryonic period; risk of fetal alcohol syndrome."},
+  {t:"Newborn, first hours", v:"Foramen ovale closing after the first breaths", n:true, ex:"It becomes a shallow depression (fossa ovalis)."},
+  {t:"Infant, 1 month", v:"Ductus arteriosus still open with a murmur", n:false, ex:"Patent ductus arteriosus. It should have closed into a ligament."},
+  {t:"Infant, 4 months", v:"Protected by maternal antibodies", n:true, ex:"Maternal antibodies protect for about 6 months."},
+  {t:"Twins", v:"Monozygotic twins of different sexes", n:false, ex:"Impossible: monozygotic twins come from one zygote and are always the same sex."},
+  {t:"Age 80", v:"Thinner, drier skin; slower nerve signals", n:true, ex:"Expected senescence; systems decline at different rates."},
+];
+
+const AXIS = [
+  {pre:"Ductus venosus: lets most umbilical blood bypass the immature", ans:"Liver", post:"."},
+  {pre:"Foramen ovale: a hole that sends blood from the right atrium to the", ans:"Left atrium", post:", skipping the lungs."},
+  {pre:"Ductus arteriosus: routes blood from the pulmonary trunk to the", ans:"Aorta", post:", skipping the lungs."},
+  {pre:"At birth, the first breath is triggered by a buildup of", ans:"Carbon dioxide", post:"."},
+  {pre:"After birth the foramen ovale becomes a shallow depression, the", ans:"Fossa ovalis", post:"."},
+  {pre:"After birth the ductus arteriosus becomes a", ans:"Ligament (ligamentum arteriosum)", post:"."},
+];
+const AXIS_CHOICES = ["Liver","Left atrium","Aorta","Carbon dioxide","Fossa ovalis","Ligament (ligamentum arteriosum)","Kidney","Right ventricle","Oxygen","Placenta"];
+const AXIS_CASE = {
+  bed:"NICU", who:"Newborn, 6 hours old", cc:"Pediatric resident asks why the foramen ovale closes on its own",
+  f:[["Status","Breathing room air, pink"],["Lungs","Expanded"],["Question","“What makes the flap shut?”"]],
+  q:"Using the shunts you just mapped, why do the fetal shunts stop being needed at birth?",
+  o:["The placenta keeps oxygenating the blood","Once the lungs inflate, blood flows through them to pick up oxygen, so the shunts that bypass the lungs close and become depressions or ligaments","The liver becomes the main oxygen source","Maternal antibodies close them"],a:1,
+  ex:"Before birth the lungs are collapsed and the placenta supplies oxygen, so the foramen ovale and ductus arteriosus send blood around the lungs. After the first breath the lungs take over gas exchange, and the shunts close: the foramen ovale becomes the fossa ovalis and the ductus arteriosus becomes a ligament.",
+  pearl:"When a shunt stays open, as in patent ductus arteriosus (common in premature babies), blood flows the wrong way and the lungs get overloaded.",
+  ref:"Slides 16–17 · Fetal circulation, Birth"
+};
+
+/* ============ STATE ============ */
+const S = {score:0, streak:0,
+  rounds:{correct:0,total:0,done:false}, route:{correct:0,total:0,done:false},
+  labs:{correct:0,total:0,done:false}, axis:{correct:0,total:0,done:false}};
+const TABS = [["home","Shift Board"],["rounds","Patient Rounds"],["route","Development Timeline"],["labs","Lab Flags"],["axis","Fetal Shunts"],["report","Shift Report"]];
+let current = "home";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+function award(ok, pts=10){
+  if(ok){S.streak++; S.score += pts + Math.min(S.streak-1,5)*2; if(S.streak>0 && S.streak%3===0) toast(`🔥 ${S.streak} in a row! Streak bonus`);}
+  else S.streak=0;
+  $("#hudScore").textContent=S.score; $("#hudStreak").textContent=S.streak;
+}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800)}
+
+function renderTabs(){
+  $("#tabs").innerHTML = TABS.map(([id,label])=>{
+    const done = S[id] && S[id].done ? '<span class="done">✓</span>' : '';
+    return `<button role="tab" aria-selected="${id===current}" data-tab="${id}">${label}${done}</button>`}).join("");
+  $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>go(b.dataset.tab));
+}
+function go(id){current=id;renderTabs();clearInterval(labTimer);
+  ({home:viewHome,rounds:viewRounds,route:viewRoute,labs:viewLabs,axis:viewAxis,report:viewReport})[id]();
+  window.scrollTo({top:0,behavior:"smooth"});}
+
+/* ============ HOME ============ */
+function viewHome(){
+  $("#view").innerHTML = `<div class="card intro">
+    <h2>Welcome to your shift 🩺</h2>
+    <p>You're working a clinic shift covering prenatal care, the NICU, genetics, fertility and geriatrics. Every patient connects back to a Chapter 29 concept. Earn points for correct calls and keep a streak going for bonus points. Every answer comes with a clinical pearl and the slide reference.</p>
+    <div class="grid4">
+      ${station("rounds","🛏️","Patient Rounds","10 randomized patient cases. Diagnose, then explain the physiology.")}
+      ${station("route","🧭","Development Timeline","Put development in order from zygote to birth, then answer clinical questions on your timeline.")}
+      ${station("labs","🧪","Lab Flags","Rapid-fire: expected or flag it? 10 seconds per result.")}
+      ${station("axis","🫀","Fetal Shunts","Map the fetal circulation shunts and what happens to them at birth.")}
+    </div></div>`;
+  document.querySelectorAll(".station").forEach(b=>b.onclick=()=>go(b.dataset.go));
+}
+const station=(id,ico,h,p)=>`<button class="station" data-go="${id}"><div class="ico" aria-hidden="true">${ico}</div><h3>${h}${S[id].done?' ✓':''}</h3><p>${p}</p></button>`;
+
+/* ============ CASE RENDERER (shared) ============ */
+function caseHTML(c, idx, total){
+  const opts = shuffle(c.o.map((t,i)=>({t,i})));
+  return {opts, html:`
+   ${total?`<div class="row spread small muted"><span>Patient ${idx+1} of ${total}</span><span>${S.rounds.correct} correct so far</span></div><div class="progress"><div style="width:${idx/total*100}%"></div></div>`:''}
+   <div class="chart">
+     <div class="chart-head"><strong>${esc(c.who)}</strong><span>${esc(c.bed)}</span></div>
+     <div class="chart-body">
+       <p class="cc">Chief complaint: ${esc(c.cc)}</p>
+       <ul class="findings">${c.f.map(([l,v])=>`<li><span class="lbl">${esc(l)}</span>${esc(v)}</li>`).join("")}</ul>
+       <p class="q">${esc(c.q)}</p>
+       <div class="opts">${opts.map((o,k)=>`<button class="opt" data-i="${o.i}">${String.fromCharCode(65+k)}. ${esc(o.t)}</button>`).join("")}</div>
+       <div class="feedback" id="fb" aria-live="polite"></div>
+     </div>
+   </div>`};
+}
+function wireCase(c, onDone){
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const pick=+b.dataset.i, ok = pick===c.a;
+    document.querySelectorAll(".opt").forEach(x=>{x.disabled=true; if(+x.dataset.i===c.a) x.classList.add("right");});
+    if(!ok) b.classList.add("wrong");
+    award(ok);
+    const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+    fb.innerHTML=`<h4>${ok?"✅ Good call.":"❌ Not quite. Here's the reasoning."}</h4><div>${esc(c.ex)}</div>
+      <div class="pearl"><b>Clinical pearl:</b> ${esc(c.pearl)}</div><div class="ref">${esc(c.ref)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="nextBtn">Continue →</button></div>`;
+    $("#nextBtn").onclick=()=>onDone(ok); $("#nextBtn").focus();
+  });
+}
+
+/* ============ ROUNDS ============ */
+let roundDeck=[], roundIdx=0;
+function viewRounds(){
+  if(!roundDeck.length || S.rounds.done){
+    $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🛏️ Patient Rounds</h2>
+      <p>You'll see <b>10 patients</b> drawn at random from a pool of ${CASES.length}. Read each chart, then make the call. Replay any time for a different mix.</p>
+      ${S.rounds.done?`<p class="muted">Last run: ${S.rounds.correct}/${S.rounds.total} correct.</p>`:''}
+      <button class="btn" id="startR">${S.rounds.done?"Start a new set":"Start rounds"}</button></div>`;
+    $("#startR").onclick=()=>{roundDeck=shuffle(CASES).slice(0,10);roundIdx=0;S.rounds={correct:0,total:0,done:false};renderRound()};
+    return;
+  }
+  renderRound();
+}
+function renderRound(){
+  const c=roundDeck[roundIdx]; const {html}=caseHTML(c,roundIdx,roundDeck.length);
+  $("#view").innerHTML=`<div class="card">${html}</div>`;
+  wireCase(c, ok=>{S.rounds.total++; if(ok) S.rounds.correct++; roundIdx++;
+    if(roundIdx>=roundDeck.length){S.rounds.done=true;roundDeck=[];renderTabs();
+      $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Rounds complete 🎉</h2><p>You got <b>${S.rounds.correct} of ${S.rounds.total}</b> patients right.</p><div class="row"><button class="btn" data-go="route">Next station: Development Timeline →</button><button class="btn ghost" data-go="rounds">Another set</button></div></div>`;
+      document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+    } else renderRound();
+  });
+}
+
+/* ============ ROUTE ============ */
+let placed=[], bonusIdx=0, routePhase="order";
+function viewRoute(){placed=[];bonusIdx=0;routePhase="order";S.route={correct:0,total:0,done:false};renderRoute()}
+function renderRoute(){
+  const bank = shuffle(ROUTE.filter(x=>!placed.includes(x)));
+  if(routePhase==="order"){
+    $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧭 Development Timeline</h2>
+     <p>Put the major events of prenatal development in order. <b>Tap the stages in order.</b> Tap a placed tile to send it back.</p>
+     <p class="small muted">Track (${placed.length}/${ROUTE.length})</p>
+     <div class="track" id="track">${placed.length?placed.map((p,i)=>`${i?'<span class="arrow">→</span>':''}<button class="tile placed" data-back="${esc(p)}">${esc(p)}</button>`).join(""):'<span class="muted small">Start at the very beginning…</span>'}</div>
+     <p class="small muted" style="margin-top:14px">Structure bank</p>
+     <div class="bank">${bank.map(b=>`<button class="tile" data-add="${esc(b)}">${esc(b)}</button>`).join("")||'<span class="muted small">All placed!</span>'}</div>
+     <div class="row" style="margin-top:16px"><button class="btn" id="checkRoute" ${placed.length<ROUTE.length?'disabled':''}>Check my route</button><button class="btn ghost" id="resetRoute">Reset</button></div>
+     <div class="feedback" id="fb"></div></div>`;
+    document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{placed.push(b.dataset.add);renderRoute()});
+    document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>{placed=placed.filter(x=>x!==b.dataset.back);renderRoute()});
+    $("#resetRoute").onclick=()=>{placed=[];renderRoute()};
+    $("#checkRoute").onclick=checkRoute;
+  }
+}
+function checkRoute(){
+  let right=0;
+  document.querySelectorAll("#track .tile").forEach((t,i)=>{t.disabled=true;const ok=placed[i]===ROUTE[i];if(ok)right++;t.classList.add(ok?"ok":"no")});
+  const ok = right===ROUTE.length; S.route.total++; if(ok)S.route.correct++; award(ok,15);
+  document.querySelectorAll("[data-add],#checkRoute,#resetRoute").forEach(b=>b.disabled=true);
+  const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+  fb.innerHTML=`<h4>${ok?"✅ Perfect route!":`❌ ${right}/${ROUTE.length} in the right position.`}</h4>
+   <div><b>Correct order:</b> ${ROUTE.map(esc).join(" → ")}</div>
+   <div class="pearl"><b>Clinical pearl:</b> The pre-embryonic stage covers the first 16 days, the embryonic stage runs to the end of week 8, and the fetal stage runs from week 9 to birth.</div>
+   <div class="ref">Slides 6–12 · Pre-embryonic and embryonic stages</div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="toBonus">Clinical follow-ups →</button></div>`;
+  $("#toBonus").onclick=()=>{routePhase="bonus";renderBonus()};
+}
+function renderBonus(){
+  const b=ROUTE_BONUS[bonusIdx];
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧭 Clinical follow-up ${bonusIdx+1} of ${ROUTE_BONUS.length}</h2>
+   <p class="q">${esc(b.q)}</p>
+   <div class="track">${ROUTE.map((p,i)=>`${i?'<span class="arrow">→</span>':''}<button class="tile target" data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div>
+   <div class="feedback" id="fb"></div></div>`;
+  document.querySelectorAll("[data-p]").forEach(t=>t.onclick=()=>{
+    const ok=t.dataset.p===b.a; S.route.total++; if(ok)S.route.correct++; award(ok);
+    document.querySelectorAll("[data-p]").forEach(x=>{x.disabled=true;if(x.dataset.p===b.a)x.classList.add("ok")}); if(!ok)t.classList.add("no");
+    const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+    const last=bonusIdx===ROUTE_BONUS.length-1;
+    fb.innerHTML=`<h4>${ok?"✅ Correct.":"❌ The answer is the "+esc(b.a)+"."}</h4><div>${esc(b.ex)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="nb">${last?"Finish station":"Next →"}</button></div>`;
+    $("#nb").onclick=()=>{ if(last){S.route.done=true;renderTabs();
+        $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Timeline complete 🎉</h2><p>${S.route.correct}/${S.route.total} correct at this station.</p><div class="row"><button class="btn" data-go="labs">Next station: Lab Flags →</button><button class="btn ghost" data-go="route">Redo</button></div></div>`;
+        document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+      } else {bonusIdx++;renderBonus()} };
+    $("#nb").focus();
+  });
+}
+
+/* ============ LABS ============ */
+let labDeck=[], labIdx=0, labTimer=null, labLeft=0;
+const LAB_SECS=10;
+function viewLabs(){
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧪 Lab Flags</h2>
+   <p>Results are coming off the analyzer. For each one, decide whether it's <b>Expected</b> or should be <b>Flagged</b> before the timer runs out (${LAB_SECS} s). Running out of time counts as a miss.</p>
+   <p class="small muted">Tip: keyboard works too. <b>N</b> = expected, <b>A</b> = flag it.</p>
+   ${S.labs.done?`<p class="muted">Last run: ${S.labs.correct}/${S.labs.total}.</p>`:''}
+   <button class="btn" id="startL">Start the queue</button></div>`;
+  $("#startL").onclick=()=>{labDeck=shuffle(LABS).slice(0,10);labIdx=0;S.labs={correct:0,total:0,done:false};renderLab()};
+}
+function renderLab(){
+  const L=labDeck[labIdx];
+  $("#view").innerHTML=`<div class="card">
+   <div class="row spread small muted"><span>Result ${labIdx+1} of ${labDeck.length}</span><span>${S.labs.correct} correct</span></div>
+   <div class="timer"><div id="tbar"></div></div>
+   <div class="labcard"><div class="muted small">${esc(L.t)}</div><div class="val">${esc(L.v)}</div></div>
+   <div class="flagbtns"><button class="fb-normal" data-n="1">✓ Expected</button><button class="fb-abn" data-n="0">⚠ Flag it</button></div>
+   <div class="feedback" id="fb"></div></div>`;
+  labLeft=LAB_SECS*10; const bar=$("#tbar");
+  clearInterval(labTimer);
+  labTimer=setInterval(()=>{labLeft--;bar.style.width=(labLeft/(LAB_SECS*10)*100)+"%";if(labLeft<=0){answerLab(null)}},100);
+  document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>answerLab(b.dataset.n==="1"));
+}
+function answerLab(choice){
+  clearInterval(labTimer);
+  if(!$("#fb")||$("#fb").classList.contains("show")) return;
+  const L=labDeck[labIdx]; const ok = choice===L.n;
+  S.labs.total++; if(ok)S.labs.correct++; award(ok,8);
+  document.querySelectorAll("[data-n]").forEach(b=>b.disabled=true);
+  const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+  const last=labIdx===labDeck.length-1;
+  fb.innerHTML=`<h4>${choice===null?"⏱ Time's up!":ok?"✅ Correct flag.":"❌ Wrong flag."} This result is <b>${L.n?"EXPECTED":"A RED FLAG"}</b>.</h4><div>${esc(L.ex)}</div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="nl">${last?"Finish queue":"Next result →"}</button></div>`;
+  $("#nl").onclick=()=>{ if(last){S.labs.done=true;renderTabs();
+      $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Queue cleared 🎉</h2><p>${S.labs.correct}/${S.labs.total} flags correct.</p><div class="row"><button class="btn" data-go="axis">Next station: Fetal Shunts →</button><button class="btn ghost" data-go="labs">Run again</button></div></div>`;
+      document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+    } else {labIdx++;renderLab()} };
+  $("#nl").focus();
+}
+document.addEventListener("keydown",e=>{
+  if(current!=="labs"||!$("[data-n]")||$("[data-n]").disabled) return;
+  if(e.key==="n"||e.key==="N") answerLab(true);
+  if(e.key==="a"||e.key==="A") answerLab(false);
+});
+
+/* ============ AXIS ============ */
+function viewAxis(){
+  S.axis={correct:0,total:0,done:false};
+  const choices=shuffle(AXIS_CHOICES);
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🫀 Map the Fetal Shunts</h2>
+   <p>Complete the fetal circulation and what changes at birth. Each blank uses a different answer, and some choices are distractors.</p>
+   <div class="axis">${AXIS.map((r,i)=>`<div class="axis-row"><span>${esc(r.pre)}</span>
+     <select data-i="${i}" aria-label="Blank ${i+1}"><option value="">— choose —</option>${choices.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+     <span>${esc(r.post)}</span></div>`).join("")}</div>
+   <div class="row" style="margin-top:16px"><button class="btn" id="checkAxis">Check shunts</button></div>
+   <div class="feedback" id="fb"></div></div>`;
+  $("#checkAxis").onclick=()=>{
+    const sels=[...document.querySelectorAll(".axis select")];
+    if(sels.some(s=>!s.value)){toast("Fill every blank first");return}
+    let right=0; sels.forEach(s=>{const ok=s.value===AXIS[+s.dataset.i].ans; if(ok)right++; s.classList.add(ok?"ok":"no"); s.disabled=true;});
+    S.axis.total+=AXIS.length; S.axis.correct+=right; award(right===AXIS.length,15);
+    $("#checkAxis").disabled=true;
+    const fb=$("#fb"); fb.className="feedback show "+(right===AXIS.length?"good":"bad");
+    fb.innerHTML=`<h4>${right===AXIS.length?"✅ Shunts mapped!":`${right}/${AXIS.length} correct.`}</h4>
+     <div>${AXIS.map(r=>`${esc(r.pre)} <b>${esc(r.ans)}</b> ${esc(r.post)}`).join("<br>")}</div>
+     <div class="pearl"><b>Clinical pearl:</b> All three fetal shunts exist because the placenta, not the lungs or liver, does the work before birth. That's the key to your next patient.</div>
+     <div class="ref">Slides 16–17 · Fetal circulation, Birth</div>
+     <div class="row" style="margin-top:12px"><button class="btn" id="toAxisCase">See the patient →</button></div>`;
+    $("#toAxisCase").onclick=axisCase;
+  };
+}
+function axisCase(){
+  const {html}=caseHTML(AXIS_CASE);
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🔁 Apply it</h2>${html}</div>`;
+  wireCase(AXIS_CASE, ok=>{S.axis.total++; if(ok)S.axis.correct++; S.axis.done=true; renderTabs(); go("report")});
+}
+
+/* ============ REPORT ============ */
+function viewReport(){
+  const rows=[["Patient Rounds","rounds"],["Development Timeline","route"],["Lab Flags","labs"],["Fetal Shunts","axis"]];
+  const c=rows.reduce((a,[,k])=>a+S[k].correct,0), t=rows.reduce((a,[,k])=>a+S[k].total,0);
+  const pct = t? Math.round(c/t*100):0;
+  const stars = t? (pct>=90?5:pct>=80?4:pct>=70?3:pct>=55?2:1):0;
+  const title = !t?"Shift not started": pct>=90?"Attending-level performance":pct>=80?"Chief resident material":pct>=70?"Solid intern shift":pct>=55?"Keep reviewing those charts":"Time for a study session with Ch. 29";
+  const allDone=rows.every(([,k])=>S[k].done);
+  $("#view").innerHTML=`<div class="card report"><h2 style="margin-top:0">📋 Shift Report</h2>
+   <div class="stars" aria-label="${stars} of 5 stars">${"★".repeat(stars)}${"☆".repeat(5-stars)}</div>
+   <p style="font-size:1.1rem;margin:4px 0"><b>${title}</b></p>
+   <p class="muted">Total score <b>${S.score}</b> · ${c}/${t} correct (${pct}%)${allDone?"":" · some stations not finished yet"}</p>
+   <table><thead><tr><th>Station</th><th>Correct</th><th>Status</th></tr></thead><tbody>
+   ${rows.map(([n,k])=>`<tr><td>${n}</td><td class="num">${S[k].correct}/${S[k].total}</td><td>${S[k].done?"✓ Complete":`<button class="btn ghost" data-go="${k}" style="padding:4px 10px">Go</button>`}</td></tr>`).join("")}
+   </tbody></table>
+   <div class="row" style="margin-top:16px"><button class="btn" id="restart">Start a new shift</button></div></div>`;
+  document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+  $("#restart").onclick=()=>{Object.assign(S,{score:0,streak:0,rounds:{correct:0,total:0,done:false},route:{correct:0,total:0,done:false},labs:{correct:0,total:0,done:false},axis:{correct:0,total:0,done:false}});roundDeck=[];$("#hudScore").textContent=0;$("#hudStreak").textContent=0;go("home")};
+}
+
+renderTabs(); viewHome();
+</script>
+</body>
+</html>
