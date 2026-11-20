@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ch 27 Clinic Shift: Male Reproductive System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f6f8; --card:#ffffff; --ink:#14232f; --muted:#5b6b78; --line:#d9e2e8;
+  --teal:#0f7c7a; --teal-soft:#e2f3f2; --navy:#1d3a52; --good:#1f8a4c; --good-soft:#e5f5ec;
+  --bad:#b8392f; --bad-soft:#fbe9e7; --amber:#b9770e; --amber-soft:#fdf3e1;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.badge{width:46px;height:46px;border-radius:12px;background:var(--navy);display:grid;place-items:center;color:#fff;font-weight:700;font-size:20px}
+.brand h1{margin:0;font-size:1.35rem}
+.brand p{margin:0;color:var(--muted);font-size:.9rem}
+.hud{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.88rem;display:flex;gap:6px;align-items:center}
+.chip b{font-family:"DM Mono",monospace}
+nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+nav.tabs button{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 14px;color:var(--ink);font-weight:500}
+nav.tabs button[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+nav.tabs button .done{color:var(--good);font-weight:700;margin-left:4px}
+nav.tabs button[aria-selected="true"] .done{color:#9be3b8}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 1px 2px rgba(20,35,47,.04)}
+.intro h2{margin-top:0}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.station{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fafcfd;text-align:left;color:var(--ink)}
+.station:hover{border-color:var(--teal);background:var(--teal-soft)}
+.station .ico{font-size:1.6rem}
+.station h3{margin:6px 0 4px;font-size:1.02rem}
+.station p{margin:0;color:var(--muted);font-size:.88rem}
+.btn{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 16px}
+.progress > div{height:100%;background:var(--teal);transition:width .3s}
+/* chart */
+.chart{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.chart .chart-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:.9rem}
+.chart .chart-head span{font-family:"DM Mono",monospace;opacity:.85}
+.chart .chart-body{padding:16px}
+.cc{font-size:1.08rem;font-weight:700;margin:0 0 8px}
+.findings{margin:0;padding-left:0;list-style:none;display:grid;gap:6px}
+.findings li{background:#f6f9fb;border-left:3px solid var(--teal);padding:6px 10px;border-radius:0 8px 8px 0;font-size:.95rem}
+.findings li .lbl{font-family:"DM Mono",monospace;font-size:.75rem;color:var(--teal);text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
+.q{font-weight:700;margin:18px 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--teal);background:var(--teal-soft)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.feedback{margin-top:14px;border-radius:10px;padding:14px 16px;display:none}
+.feedback.show{display:block}
+.feedback.good{background:var(--good-soft);border:1px solid #b8e2c9}
+.feedback.bad{background:var(--bad-soft);border:1px solid #f0c3bd}
+.feedback h4{margin:0 0 6px}
+.feedback .ref{font-family:"DM Mono",monospace;font-size:.78rem;color:var(--muted);margin-top:8px}
+.pearl{margin-top:8px;background:var(--amber-soft);border-radius:8px;padding:8px 10px;font-size:.92rem}
+.pearl b{color:var(--amber)}
+/* route */
+.bank,.track{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border-radius:10px}
+.bank{background:#f6f9fb;border:1px dashed var(--line)}
+.track{background:var(--teal-soft);border:1px solid #bfe2e0;align-items:center}
+.tile{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:500;color:var(--ink)}
+.tile:hover:not(:disabled){border-color:var(--teal)}
+.tile.placed{border-color:var(--teal)}
+.tile.ok{border-color:var(--good);background:var(--good-soft)}
+.tile.no{border-color:var(--bad);background:var(--bad-soft)}
+.tile.target{border-style:dashed}
+.arrow{color:var(--teal);font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+/* lab */
+.timer{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0}
+.timer > div{height:100%;background:var(--amber);width:100%}
+.labcard{text-align:center;padding:26px 16px;border:1px solid var(--line);border-radius:12px;background:#fafcfd}
+.labcard .val{font-family:"DM Mono",monospace;font-size:1.25rem;font-weight:500;margin:6px 0}
+.flagbtns{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.flagbtns button{min-width:150px;padding:14px;border-radius:12px;font-weight:700;border:2px solid}
+.fb-normal{background:var(--good-soft);border-color:var(--good)!important;color:var(--good)}
+.fb-abn{background:var(--bad-soft);border-color:var(--bad)!important;color:var(--bad)}
+/* axis */
+.axis{display:grid;gap:10px}
+.axis-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#f6f9fb;border-radius:10px;padding:10px 12px}
+.axis-row select{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:#fff}
+.axis-row select.ok{border-color:var(--good);background:var(--good-soft)}
+.axis-row select.no{border-color:var(--bad);background:var(--bad-soft)}
+.report table{width:100%;border-collapse:collapse;margin-top:10px}
+.report th,.report td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+.report td.num{font-family:"DM Mono",monospace}
+.stars{font-size:1.6rem;letter-spacing:4px;color:var(--amber)}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:999px;font-weight:500;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:560px){.flagbtns button{min-width:120px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="badge" aria-hidden="true">27</div>
+      <div>
+        <h1>Clinic Shift: The Male Reproductive System</h1>
+        <p>Saladin A&amp;P 10e, Chapter 27 · clinical review activity</p>
+      </div>
+    </div>
+    <div class="hud" aria-live="polite">
+      <div class="chip">Score <b id="hudScore">0</b></div>
+      <div class="chip">Streak <b id="hudStreak">0</b> 🔥</div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ============ DATA ============ */
+const CASES = [
+ {bed:"Nursery", who:"Newborn, day 1", cc:"Routine newborn exam",
+  f:[["Exam","Left hemiscrotum full; right hemiscrotum empty"],["Palpation","Small mobile mass felt in the right inguinal canal"],["History","Born at 35 weeks"]],
+  q:"What is the most likely finding?",
+  o:["Cryptorchidism (undescended testis)","Inguinal hernia","Androgen insensitivity syndrome","Benign prostatic hyperplasia"],a:0,
+  ex:"About 3% of boys are born with an undescended testis. Testes normally pass through the inguinal canal into the scrotum in the 7th month, guided by the gubernaculum, so a preterm birth makes this more likely.",
+  pearl:"Why it matters: sperm can't be produced at core temperature (37°C). The testis has to sit at about 35°C in the scrotum.",
+  ref:"Slides 21–23 · 27.1g Descent of the Gonads"},
+ {bed:"Room 4", who:"24-year-old male, competitive weightlifter", cc:"“There's a bulge in my groin when I lift.”",
+  f:[["Exam","Soft bulge in right groin that enlarges with coughing/straining"],["Exam","Bulge reduces when supine"],["Scrotum","Both testes descended, non-tender"]],
+  q:"Why is this region a common weak spot in males?",
+  o:["The pampiniform plexus thins the abdominal wall","The gubernaculum and vaginal process created the inguinal canal, a low-resistance path through the groin","The perineal raphe is a seam of weak tissue","The cremaster muscle atrophies with heavy lifting"],a:1,
+  ex:"During fetal development, the gubernaculum and vaginal process form the inguinal canal so the testis can descend. That leaves a pathway of low resistance through the groin, which is the most common site of hernia in males.",
+  pearl:"Spermatic cord structures run through this same canal, from the superficial inguinal ring to the deep inguinal ring.",
+  ref:"Slides 21, 27 · 27.1g, 27.2a"},
+ {bed:"Urology 2", who:"68-year-old male", cc:"Weak urine stream; wakes 3× a night to urinate",
+  f:[["History","Hesitancy; feels the bladder never fully empties"],["DRE","Prostate smooth, rubbery, symmetrically enlarged, non-tender"],["UA","Mild bacteriuria"]],
+  q:"Most likely diagnosis?",
+  o:["Prostate cancer","Benign prostatic hyperplasia (BPH)","Chlamydial urethritis","Retrograde ejaculation"],a:1,
+  ex:"BPH is noncancerous enlargement of the prostate. Because the prostate surrounds the urethra just below the bladder, enlargement compresses the prostatic urethra, obstructs urine flow, and makes it hard to empty the bladder completely.",
+  pearl:"Urine left in the bladder can lead to bladder and kidney infections. That fits the bacteriuria.",
+  ref:"Slides 41–42 · 27.2d Accessory Glands, Prostate Diseases"},
+ {bed:"Urology 3", who:"71-year-old male", cc:"No symptoms; here for routine screening labs",
+  f:[["Labs","PSA markedly elevated"],["DRE","Firm, irregular nodule on posterior prostate"],["Symptoms","None reported"]],
+  q:"PSA is a serine protease. What is its normal job in reproductive physiology?",
+  o:["It clots semen by converting proseminogelin to semenogelin","It provides fructose for sperm ATP production","It liquefies semen 20–30 min after ejaculation by breaking down semenogelin","It buffers vaginal pH from 3.5 to 7.5"],a:2,
+  ex:"Prostate-specific antigen (PSA) is the serine protease in prostatic fluid that breaks down semenogelin and liquefies the semen 20–30 minutes after ejaculation. Elevated blood levels are an indicator of prostate cancer.",
+  pearl:"Prostate cancer often goes unnoticed until it's painful. That's why screening uses the DRE (palpating through the rectal wall) plus blood PSA and acid phosphatase.",
+  ref:"Slides 42, 67 · Prostate Diseases, 27.4d Semen"},
+ {bed:"Endocrine", who:"16-year-old patient raised as a girl", cc:"Has never had a menstrual period",
+  f:[["Exam","Normal breast development; female external genitalia"],["Imaging","No uterus; bilateral gonads in the abdomen/inguinal region"],["Labs","Karyotype 46,XY · testosterone in typical male range"]],
+  q:"Which diagnosis explains these findings?",
+  o:["Adrenogenital syndrome (AGS)","Cryptorchidism","Androgen insensitivity syndrome (AIS)","Primary hypogonadism"],a:2,
+  ex:"In AIS the person is XY and the testes secrete normal male levels of testosterone, but target cells lack testosterone receptors. The external genitalia develop as if no testosterone were present. MIF from the testes still causes the paramesonephric ducts to degenerate, so there is no uterus.",
+  pearl:"Contrast with AGS: an XX fetus is masculinized by abnormally high prenatal androgen exposure.",
+  ref:"Slides 11–14 · 27.1d–e"},
+ {bed:"Fertility", who:"31-year-old male", cc:"Couple has been trying to conceive for 14 months",
+  f:[["Semen analysis","Sperm count 12 million/mL"],["Volume & liquefaction","Within expected range"],["Exam","Unremarkable"]],
+  q:"How should you interpret the sperm count?",
+  o:["Normal (normal is 10–50 million/mL)","Below the infertility threshold of 20 million/mL","Borderline normal; the threshold is 5 million/mL","Elevated, which suggests hyperstimulation by FSH"],a:1,
+  ex:"Normal sperm count is 50–120 million/mL. A count below 20 million/mL is considered infertile, so 12 million/mL is well below that cutoff.",
+  pearl:"Even though only one sperm fertilizes the egg, huge numbers are needed to get enough sperm through the female tract.",
+  ref:"Slide 66 · 27.4d Semen"},
+ {bed:"Fertility", who:"29-year-old male", cc:"Low sperm count on two analyses",
+  f:[["Social history","Uses a hot tub nightly; works with a laptop on his lap"],["Exam","Normal testes, no varicocele"],["Hormones","Normal LH, FSH, testosterone"]],
+  q:"Which physiological fact best explains his likely contributing factor?",
+  o:["Heat raises inhibin, which shuts off GnRH","Testes cannot produce sperm at 37°C. They must be kept at about 35°C","Heat destroys the blood–testis barrier permanently","Heat stimulates the cremaster to pull testes away from the body"],a:1,
+  ex:"Human testes can't produce sperm at core body temperature. Repeated scrotal heating defeats the cooling mechanisms: the cremaster, the dartos, and the pampiniform plexus countercurrent heat exchanger.",
+  pearl:"Pampiniform plexus: venous blood ascending from the testis absorbs heat from descending arterial blood, cooling it from 37°C to about 35°C.",
+  ref:"Slides 28, 30 · The Scrotum 3, Countercurrent Heat Exchanger"},
+ {bed:"Room 7", who:"19-year-old male", cc:"Dull, dragging ache in the LEFT scrotum, worse when standing",
+  f:[["Exam","Soft mass above left testis that feels like a “bag of worms”"],["Exam","Mass decreases when lying down"],["Right side","Normal"]],
+  q:"This dilated pampiniform plexus (varicocele) is far more common on the left. Which anatomical fact explains that?",
+  o:["The left testicular artery has higher blood pressure","The left testicular vein drains into the left renal vein; the right drains into the IVC","The left testis has no cremaster muscle","The left ductus deferens compresses the vein"],a:1,
+  ex:"The right testicular vein drains directly into the inferior vena cava, but the left one drains into the left renal vein. The left side's longer, right-angled drainage route makes venous pooling in the pampiniform plexus more likely.",
+  pearl:"A swollen plexus also weakens the countercurrent cooling of the testis. That's one way varicoceles are linked to lower sperm production.",
+  ref:"Slide 36 · The Testes 4"},
+ {bed:"ED Bay 2", who:"22-year-old male", cc:"Sudden severe scrotal pain, also felt around the navel",
+  f:[["Onset","Abrupt, 2 hours ago, with nausea"],["Exam","Exquisitely tender, high-riding right testis"],["Abdomen","Soft; no abdominal pathology found"]],
+  q:"Why does he feel this testicular problem in the periumbilical abdomen?",
+  o:["The testicular artery branches from the umbilical artery","The testicular nerves arise from spinal cord segments T10–T11, which also serve the umbilical region","The vaginal process is still open to the abdomen","The ductus deferens is inflamed in the pelvic cavity"],a:1,
+  ex:"The testicular nerves come from spinal segments T10 and T11 and carry sensory pain fibers. Those segments also supply skin around the umbilicus, so the brain refers the pain there. This reflects the testis's origin high in the abdomen.",
+  pearl:"Sudden severe testicular pain needs urgent evaluation. A twisted spermatic cord (torsion) cuts off the testicular blood supply.",
+  ref:"Slides 21, 36 · Descent of the Gonads, The Testes 4"},
+ {bed:"Clinic 5", who:"40-year-old male", cc:"Pre-vasectomy counseling: “Will my semen volume drop a lot?”",
+  f:[["Plan","Bilateral vasectomy"],["Concern","Change in ejaculate"],["History","Healthy, two children"]],
+  q:"What's the best evidence-based answer?",
+  o:["Yes, about 90% of semen volume comes from the testes","No; ~60% comes from the seminal vesicles and ~30% from the prostate, both downstream of the cut","No, because the ejaculatory duct is cut instead","Yes, because the prostate stops secreting after vasectomy"],a:1,
+  ex:"Vasectomy cuts the ductus deferens. Seminal plasma comes mainly from the seminal vesicles (~60%) and prostate (~30%), which add their secretions downstream, so volume barely changes. The semen just lacks sperm.",
+  pearl:"Sperm still form, but they aren't ejaculated. They disintegrate and are reabsorbed in the epididymis.",
+  ref:"Slides 37–38, 41 · Spermatic Ducts, Accessory Glands"},
+ {bed:"Clinic 6", who:"62-year-old male with erectile dysfunction", cc:"Prescribed a PDE5 inhibitor (e.g., sildenafil)",
+  f:[["Question","“Will this just give me an erection?”"],["History","Type 2 diabetes, hypertension"],["Plan","Patient education"]],
+  q:"Which explanation of the drug's mechanism is accurate?",
+  o:["It releases nitric oxide directly, so no stimulation is needed","It blocks phosphodiesterase type 5, slowing cGMP breakdown, so sexual stimulation is still required","It increases testosterone secretion by interstitial cells","It constricts the deep dorsal vein to trap blood"],a:1,
+  ex:"Sexual stimulation triggers nitric oxide release, which raises cGMP and dilates the deep arteries so blood fills the cavernous spaces. PDE5 normally breaks down cGMP. Inhibiting it prolongs the response but doesn't start it.",
+  pearl:"Erection is mainly parasympathetic (NO-mediated vasodilation of the deep arteries and helicine arteries).",
+  ref:"Slides 71–73, 79–80 · Anatomical Foundations, Treating ED"},
+ {bed:"Post-op", who:"66-year-old male, after prostate surgery", cc:"“Dry” orgasms; urine is cloudy afterward",
+  f:[["Symptom","Orgasm with little or no ejaculate"],["Post-coital urine","Cloudy; sperm present on microscopy"],["Surgery","Transurethral prostate procedure"]],
+  q:"Which normal reflex is no longer working?",
+  o:["Parasympathetic dilation of the deep artery","Sympathetic constriction of the internal urethral sphincter during expulsion","Somatic contraction of the ischiocavernosus","Secretion from the bulbourethral glands"],a:1,
+  ex:"During expulsion, a sympathetic reflex constricts the internal urethral sphincter so semen can't enter the bladder and urine can't enter the urethra. If the sphincter fails, semen goes backward into the bladder (retrograde ejaculation).",
+  pearl:"Ejaculation has two phases. In emission, sympathetic peristalsis moves sperm and secretions into the urethra. In expulsion, reflex muscle contractions push the semen out.",
+  ref:"Slide 77 · 27.5c Orgasm and Ejaculation"},
+ {bed:"Clinic 8", who:"70-year-old male", cc:"Fatigue, low mood, decreased libido",
+  f:[["Exam","Loss of muscle mass; slower beard growth"],["Labs","Testosterone ↓ · FSH ↑ · LH ↑"],["DEXA","Reduced bone density"]],
+  q:"Why are his FSH and LH elevated?",
+  o:["A pituitary tumor is secreting gonadotropins","Fewer and less active interstitial cells means less testosterone and inhibin, so negative feedback on the hypothalamus/pituitary is lost","Exogenous testosterone use","Excess androgen-binding protein"],a:1,
+  ex:"With age, interstitial endocrine cells decline in number and activity, so testosterone falls. Without the usual negative feedback, the anterior pituitary secretes more FSH and LH. This may cause mood changes, depression, and fatigue (male climacteric).",
+  pearl:"Other effects of falling testosterone: lower libido, muscle and bone loss, lower sperm count and motility, and a higher likelihood of ED.",
+  ref:"Slide 50 · 27.3c Aging and Sexual Function"},
+ {bed:"STI Clinic", who:"21-year-old male", cc:"Urethral discharge and testicular pain",
+  f:[["Exam","Thin, clear urethral discharge"],["Labs","Gonorrhea NAAT negative"],["Diagnosis","Nongonococcal urethritis (NGU)"]],
+  q:"What is the most common cause of NGU?",
+  o:["Treponema pallidum (syphilis)","Chlamydia","HSV-2","Hepatitis B"],a:1,
+  ex:"Chlamydia may cause urethral discharge and testicular pain and is the most common cause of nongonococcal urethritis.",
+  pearl:"STDs have an incubation period and a communicable period. They can be spread even with no symptoms.",
+  ref:"Slides 81–82 · Sexually Transmitted Diseases"},
+ {bed:"STI Clinic", who:"27-year-old male", cc:"Widespread pink rash, including palms",
+  f:[["History","Painless hard sore on penis 2 months ago that healed by itself"],["Exam","Diffuse non-itchy pink rash"],["Lymph nodes","Mildly enlarged"]],
+  q:"Which stage of disease is this?",
+  o:["Primary syphilis","Secondary syphilis","Tertiary syphilis (neurosyphilis)","Recurrent genital herpes"],a:1,
+  ex:"Primary syphilis produces hard lesions (chancres), and the stage ends when they disappear. The second stage is a widespread pink rash. Untreated, it can progress to tertiary syphilis with cardiovascular damage and brain lesions.",
+  pearl:"A healed chancre doesn't mean the infection is gone, so patient education matters.",
+  ref:"Slide 82 · Sexually Transmitted Diseases 2"},
+ {bed:"STI Clinic", who:"25-year-old male", cc:"Painful blisters on the genitals; second episode this year",
+  f:[["Exam","Clusters of small fluid-filled vesicles on an erythematous base"],["Symptom","Burning pain before the blisters appeared"],["History","Similar episode 5 months ago"]],
+  q:"What is the most likely causative agent?",
+  o:["Human papillomavirus (HPV)","Herpes simplex virus type 2 (HSV-2)","Chlamydia","Gonorrhea"],a:1,
+  ex:"Genital herpes, caused by HSV-2, produces painful blisters and is the most common STD in the United States. Recurrent episodes are typical.",
+  pearl:"Contrast: HPV causes genital warts (condylomas) on the perineal region, cervix, and anus, and a vaccine is available.",
+  ref:"Slide 83 · Sexually Transmitted Diseases 3"},
+];
+
+const ROUTE = ["Seminiferous tubule","Rete testis","Efferent ductules","Epididymis","Ductus deferens","Ejaculatory duct","Prostatic urethra","Membranous urethra","Spongy (penile) urethra"];
+const ROUTE_BONUS = [
+  {q:"A urologist performs a vasectomy. Click the structure that is cut.", a:"Ductus deferens",
+   ex:"The ductus deferens ascends in the spermatic cord, where it's easy to reach through the scrotum."},
+  {q:"A patient has BPH. Click the segment that gets compressed.", a:"Prostatic urethra",
+   ex:"The prostate surrounds the urethra just below the bladder, so enlargement squeezes the prostatic urethra."},
+  {q:"Where do sperm mature and wait to be ejaculated? Click it.", a:"Epididymis",
+   ex:"The epididymis is a single 6-m coiled duct where sperm mature and are stored. Unejaculated sperm are reabsorbed there."},
+];
+
+const LABS = [
+  {t:"Semen analysis", v:"Sperm count 85 million/mL", n:true, ex:"Normal is 50–120 million/mL."},
+  {t:"Semen analysis", v:"Sperm count 14 million/mL", n:false, ex:"Below 20 million/mL is considered infertile."},
+  {t:"Scrotal testis temperature", v:"≈ 35 °C", n:true, ex:"Testes need about 35°C for sperm production."},
+  {t:"Undescended testis temperature", v:"≈ 37 °C (core)", n:false, ex:"Sperm cannot be produced at core body temperature."},
+  {t:"Semen liquefaction", v:"Liquefied 25 min after collection", n:true, ex:"PSA normally liquefies semen 20–30 min after ejaculation."},
+  {t:"Semen liquefaction", v:"Still clotted at 2 hours", n:false, ex:"Delayed liquefaction means PSA isn't breaking down semenogelin on schedule."},
+  {t:"Hormone panel (age 70)", v:"Testosterone ↓ · FSH ↑ · LH ↑", n:false, ex:"Loss of negative feedback as interstitial cells decline."},
+  {t:"Newborn exam", v:"Both testes palpable in scrotum", n:true, ex:"Descent normally completes around the 7th fetal month."},
+  {t:"Karyotype + anatomy", v:"46,XY · female external genitalia · no uterus", n:false, ex:"Consistent with androgen insensitivity syndrome."},
+  {t:"Refractory period (healthy adult)", v:"30 minutes after orgasm", n:true, ex:"Normally 10 minutes to a few hours."},
+  {t:"Blood PSA (age 72)", v:"Markedly elevated", n:false, ex:"Elevated PSA is an indicator of prostate cancer and needs follow-up."},
+  {t:"Vaginal pH after ejaculation", v:"Raised toward ≈ 7.5", n:true, ex:"Prostatic fluid buffers vaginal acidity from about 3.5 to 7.5, which sperm need to be motile."},
+];
+
+const AXIS = [
+  {pre:"The hypothalamus secretes", ans:"GnRH", post:"→ which stimulates the anterior pituitary."},
+  {pre:"FSH stimulates", ans:"Nurse (sustentacular) cells", post:"→ to secrete androgen-binding protein (ABP)."},
+  {pre:"LH (ICSH) stimulates", ans:"Interstitial endocrine cells", post:"→ to secrete testosterone."},
+  {pre:"Nurse cells secrete", ans:"Inhibin", post:"→ which selectively suppresses FSH secretion."},
+  {pre:"Testosterone + ABP together stimulate", ans:"Spermatogenesis", post:"in the seminiferous tubules."},
+];
+const AXIS_CHOICES = ["GnRH","Nurse (sustentacular) cells","Interstitial endocrine cells","Inhibin","Spermatogenesis","Prolactin","Estrogen","Oxytocin"];
+const AXIS_CASE = {
+  bed:"Sports Med", who:"26-year-old male bodybuilder", cc:"Using injected anabolic steroids (testosterone) for 8 months",
+  f:[["Exam","Testes noticeably smaller and softer"],["Labs","LH ↓ · FSH ↓"],["Semen analysis","Sperm count severely reduced"]],
+  q:"Using the axis you just built, why are his testes shrinking and his sperm count falling?",
+  o:["Injected testosterone directly destroys nurse cells","High testosterone gives negative feedback that suppresses GnRH, LH and FSH, so the testes lose their stimulation","The steroids block the ductus deferens","Steroids raise testicular temperature above 35°C"],a:1,
+  ex:"Testosterone normally feeds back negatively on the hypothalamus and pituitary. A flood of outside testosterone shuts down GnRH, LH and FSH. Without LH the interstitial cells go quiet, and without FSH the nurse cells don't support spermatogenesis. The testes shrink.",
+  pearl:"This is the same feedback loop as in the aging patient, just running the other way. There, too little testosterone meant FSH/LH went up.",
+  ref:"Slide 48–49 · 27.3b Hormonal Control"
+};
+
+/* ============ STATE ============ */
+const S = {score:0, streak:0,
+  rounds:{correct:0,total:0,done:false}, route:{correct:0,total:0,done:false},
+  labs:{correct:0,total:0,done:false}, axis:{correct:0,total:0,done:false}};
+const TABS = [["home","Shift Board"],["rounds","Patient Rounds"],["route","Sperm Route"],["labs","Lab Flags"],["axis","Hormone Axis"],["report","Shift Report"]];
+let current = "home";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+function award(ok, pts=10){
+  if(ok){S.streak++; S.score += pts + Math.min(S.streak-1,5)*2; if(S.streak>0 && S.streak%3===0) toast(`🔥 ${S.streak} in a row! Streak bonus`);}
+  else S.streak=0;
+  $("#hudScore").textContent=S.score; $("#hudStreak").textContent=S.streak;
+}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800)}
+
+function renderTabs(){
+  $("#tabs").innerHTML = TABS.map(([id,label])=>{
+    const done = S[id] && S[id].done ? '<span class="done">✓</span>' : '';
+    return `<button role="tab" aria-selected="${id===current}" data-tab="${id}">${label}${done}</button>`}).join("");
+  $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>go(b.dataset.tab));
+}
+function go(id){current=id;renderTabs();clearInterval(labTimer);
+  ({home:viewHome,rounds:viewRounds,route:viewRoute,labs:viewLabs,axis:viewAxis,report:viewReport})[id]();
+  window.scrollTo({top:0,behavior:"smooth"});}
+
+/* ============ HOME ============ */
+function viewHome(){
+  $("#view").innerHTML = `<div class="card intro">
+    <h2>Welcome to your shift 🩺</h2>
+    <p>You're working a clinic shift covering urology, fertility, endocrine and STI care. Every patient connects back to a Chapter 27 concept. Earn points for correct calls and keep a streak going for bonus points. Every answer comes with a clinical pearl and the slide reference.</p>
+    <div class="grid4">
+      ${station("rounds","🛏️","Patient Rounds","10 randomized patient cases. Diagnose, then explain the physiology.")}
+      ${station("route","🧭","Sperm Route","Put the sperm's path in order, then answer surgical and clinical questions on your map.")}
+      ${station("labs","🧪","Lab Flags","Rapid-fire: normal or abnormal? 10 seconds per result.")}
+      ${station("axis","🔁","Hormone Axis","Build the hypothalamo-pituitary-gonadal axis, then use it on a patient.")}
+    </div></div>`;
+  document.querySelectorAll(".station").forEach(b=>b.onclick=()=>go(b.dataset.go));
+}
+const station=(id,ico,h,p)=>`<button class="station" data-go="${id}"><div class="ico" aria-hidden="true">${ico}</div><h3>${h}${S[id].done?' ✓':''}</h3><p>${p}</p></button>`;
+
+/* ============ CASE RENDERER (shared) ============ */
+function caseHTML(c, idx, total){
+  const opts = shuffle(c.o.map((t,i)=>({t,i})));
+  return {opts, html:`
+   ${total?`<div class="row spread small muted"><span>Patient ${idx+1} of ${total}</span><span>${S.rounds.correct} correct so far</span></div><div class="progress"><div style="width:${idx/total*100}%"></div></div>`:''}
+   <div class="chart">
+     <div class="chart-head"><strong>${esc(c.who)}</strong><span>${esc(c.bed)}</span></div>
+     <div class="chart-body">
+       <p class="cc">Chief complaint: ${esc(c.cc)}</p>
+       <ul class="findings">${c.f.map(([l,v])=>`<li><span class="lbl">${esc(l)}</span>${esc(v)}</li>`).join("")}</ul>
+       <p class="q">${esc(c.q)}</p>
+       <div class="opts">${opts.map((o,k)=>`<button class="opt" data-i="${o.i}">${String.fromCharCode(65+k)}. ${esc(o.t)}</button>`).join("")}</div>
+       <div class="feedback" id="fb" aria-live="polite"></div>
+     </div>
+   </div>`};
+}
+function wireCase(c, onDone){
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const pick=+b.dataset.i, ok = pick===c.a;
+    document.querySelectorAll(".opt").forEach(x=>{x.disabled=true; if(+x.dataset.i===c.a) x.classList.add("right");});
+    if(!ok) b.classList.add("wrong");
+    award(ok);
+    const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+    fb.innerHTML=`<h4>${ok?"✅ Good call.":"❌ Not quite. Here's the reasoning."}</h4><div>${esc(c.ex)}</div>
+      <div class="pearl"><b>Clinical pearl:</b> ${esc(c.pearl)}</div><div class="ref">${esc(c.ref)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="nextBtn">Continue →</button></div>`;
+    $("#nextBtn").onclick=()=>onDone(ok); $("#nextBtn").focus();
+  });
+}
+
+/* ============ ROUNDS ============ */
+let roundDeck=[], roundIdx=0;
+function viewRounds(){
+  if(!roundDeck.length || S.rounds.done){
+    $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🛏️ Patient Rounds</h2>
+      <p>You'll see <b>10 patients</b> drawn at random from a pool of ${CASES.length}. Read each chart, then make the call. Replay any time for a different mix.</p>
+      ${S.rounds.done?`<p class="muted">Last run: ${S.rounds.correct}/${S.rounds.total} correct.</p>`:''}
+      <button class="btn" id="startR">${S.rounds.done?"Start a new set":"Start rounds"}</button></div>`;
+    $("#startR").onclick=()=>{roundDeck=shuffle(CASES).slice(0,10);roundIdx=0;S.rounds={correct:0,total:0,done:false};renderRound()};
+    return;
+  }
+  renderRound();
+}
+function renderRound(){
+  const c=roundDeck[roundIdx]; const {html}=caseHTML(c,roundIdx,roundDeck.length);
+  $("#view").innerHTML=`<div class="card">${html}</div>`;
+  wireCase(c, ok=>{S.rounds.total++; if(ok) S.rounds.correct++; roundIdx++;
+    if(roundIdx>=roundDeck.length){S.rounds.done=true;roundDeck=[];renderTabs();
+      $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Rounds complete 🎉</h2><p>You got <b>${S.rounds.correct} of ${S.rounds.total}</b> patients right.</p><div class="row"><button class="btn" data-go="route">Next station: Sperm Route →</button><button class="btn ghost" data-go="rounds">Another set</button></div></div>`;
+      document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+    } else renderRound();
+  });
+}
+
+/* ============ ROUTE ============ */
+let placed=[], bonusIdx=0, routePhase="order";
+function viewRoute(){placed=[];bonusIdx=0;routePhase="order";S.route={correct:0,total:0,done:false};renderRoute()}
+function renderRoute(){
+  const bank = shuffle(ROUTE.filter(x=>!placed.includes(x)));
+  if(routePhase==="order"){
+    $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧭 Sperm Route</h2>
+     <p>Trace a sperm cell from where it forms to where it leaves the body. <b>Tap the structures in order.</b> Tap a placed tile to send it back.</p>
+     <p class="small muted">Track (${placed.length}/${ROUTE.length})</p>
+     <div class="track" id="track">${placed.length?placed.map((p,i)=>`${i?'<span class="arrow">→</span>':''}<button class="tile placed" data-back="${esc(p)}">${esc(p)}</button>`).join(""):'<span class="muted small">Start with where sperm are produced…</span>'}</div>
+     <p class="small muted" style="margin-top:14px">Structure bank</p>
+     <div class="bank">${bank.map(b=>`<button class="tile" data-add="${esc(b)}">${esc(b)}</button>`).join("")||'<span class="muted small">All placed!</span>'}</div>
+     <div class="row" style="margin-top:16px"><button class="btn" id="checkRoute" ${placed.length<ROUTE.length?'disabled':''}>Check my route</button><button class="btn ghost" id="resetRoute">Reset</button></div>
+     <div class="feedback" id="fb"></div></div>`;
+    document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{placed.push(b.dataset.add);renderRoute()});
+    document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>{placed=placed.filter(x=>x!==b.dataset.back);renderRoute()});
+    $("#resetRoute").onclick=()=>{placed=[];renderRoute()};
+    $("#checkRoute").onclick=checkRoute;
+  }
+}
+function checkRoute(){
+  let right=0;
+  document.querySelectorAll("#track .tile").forEach((t,i)=>{t.disabled=true;const ok=placed[i]===ROUTE[i];if(ok)right++;t.classList.add(ok?"ok":"no")});
+  const ok = right===ROUTE.length; S.route.total++; if(ok)S.route.correct++; award(ok,15);
+  document.querySelectorAll("[data-add],#checkRoute,#resetRoute").forEach(b=>b.disabled=true);
+  const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+  fb.innerHTML=`<h4>${ok?"✅ Perfect route!":`❌ ${right}/${ROUTE.length} in the right position.`}</h4>
+   <div><b>Correct order:</b> ${ROUTE.map(esc).join(" → ")}</div>
+   <div class="pearl"><b>Clinical pearl:</b> Sperm don't swim while in the male tract. Fluid from nurse cells, cilia in the efferent ductules, and smooth-muscle peristalsis in the ductus deferens move them along.</div>
+   <div class="ref">Slides 35, 37–40 · 27.2c Spermatic Ducts</div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="toBonus">Clinical follow-ups →</button></div>`;
+  $("#toBonus").onclick=()=>{routePhase="bonus";renderBonus()};
+}
+function renderBonus(){
+  const b=ROUTE_BONUS[bonusIdx];
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧭 Clinical follow-up ${bonusIdx+1} of ${ROUTE_BONUS.length}</h2>
+   <p class="q">${esc(b.q)}</p>
+   <div class="track">${ROUTE.map((p,i)=>`${i?'<span class="arrow">→</span>':''}<button class="tile target" data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div>
+   <div class="feedback" id="fb"></div></div>`;
+  document.querySelectorAll("[data-p]").forEach(t=>t.onclick=()=>{
+    const ok=t.dataset.p===b.a; S.route.total++; if(ok)S.route.correct++; award(ok);
+    document.querySelectorAll("[data-p]").forEach(x=>{x.disabled=true;if(x.dataset.p===b.a)x.classList.add("ok")}); if(!ok)t.classList.add("no");
+    const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+    const last=bonusIdx===ROUTE_BONUS.length-1;
+    fb.innerHTML=`<h4>${ok?"✅ Correct.":"❌ The answer is the "+esc(b.a)+"."}</h4><div>${esc(b.ex)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="nb">${last?"Finish station":"Next →"}</button></div>`;
+    $("#nb").onclick=()=>{ if(last){S.route.done=true;renderTabs();
+        $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Route mapped 🎉</h2><p>${S.route.correct}/${S.route.total} correct at this station.</p><div class="row"><button class="btn" data-go="labs">Next station: Lab Flags →</button><button class="btn ghost" data-go="route">Redo</button></div></div>`;
+        document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+      } else {bonusIdx++;renderBonus()} };
+    $("#nb").focus();
+  });
+}
+
+/* ============ LABS ============ */
+let labDeck=[], labIdx=0, labTimer=null, labLeft=0;
+const LAB_SECS=10;
+function viewLabs(){
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🧪 Lab Flags</h2>
+   <p>Results are coming off the analyzer. For each one, flag it <b>Normal</b> or <b>Abnormal</b> before the timer runs out (${LAB_SECS} s). Running out of time counts as a miss.</p>
+   <p class="small muted">Tip: keyboard works too. <b>N</b> = normal, <b>A</b> = abnormal.</p>
+   ${S.labs.done?`<p class="muted">Last run: ${S.labs.correct}/${S.labs.total}.</p>`:''}
+   <button class="btn" id="startL">Start the queue</button></div>`;
+  $("#startL").onclick=()=>{labDeck=shuffle(LABS).slice(0,10);labIdx=0;S.labs={correct:0,total:0,done:false};renderLab()};
+}
+function renderLab(){
+  const L=labDeck[labIdx];
+  $("#view").innerHTML=`<div class="card">
+   <div class="row spread small muted"><span>Result ${labIdx+1} of ${labDeck.length}</span><span>${S.labs.correct} correct</span></div>
+   <div class="timer"><div id="tbar"></div></div>
+   <div class="labcard"><div class="muted small">${esc(L.t)}</div><div class="val">${esc(L.v)}</div></div>
+   <div class="flagbtns"><button class="fb-normal" data-n="1">✓ Normal</button><button class="fb-abn" data-n="0">⚠ Abnormal</button></div>
+   <div class="feedback" id="fb"></div></div>`;
+  labLeft=LAB_SECS*10; const bar=$("#tbar");
+  clearInterval(labTimer);
+  labTimer=setInterval(()=>{labLeft--;bar.style.width=(labLeft/(LAB_SECS*10)*100)+"%";if(labLeft<=0){answerLab(null)}},100);
+  document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>answerLab(b.dataset.n==="1"));
+}
+function answerLab(choice){
+  clearInterval(labTimer);
+  if(!$("#fb")||$("#fb").classList.contains("show")) return;
+  const L=labDeck[labIdx]; const ok = choice===L.n;
+  S.labs.total++; if(ok)S.labs.correct++; award(ok,8);
+  document.querySelectorAll("[data-n]").forEach(b=>b.disabled=true);
+  const fb=$("#fb"); fb.className="feedback show "+(ok?"good":"bad");
+  const last=labIdx===labDeck.length-1;
+  fb.innerHTML=`<h4>${choice===null?"⏱ Time's up!":ok?"✅ Correct flag.":"❌ Wrong flag."} This result is <b>${L.n?"NORMAL":"ABNORMAL"}</b>.</h4><div>${esc(L.ex)}</div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="nl">${last?"Finish queue":"Next result →"}</button></div>`;
+  $("#nl").onclick=()=>{ if(last){S.labs.done=true;renderTabs();
+      $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">Queue cleared 🎉</h2><p>${S.labs.correct}/${S.labs.total} flags correct.</p><div class="row"><button class="btn" data-go="axis">Next station: Hormone Axis →</button><button class="btn ghost" data-go="labs">Run again</button></div></div>`;
+      document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+    } else {labIdx++;renderLab()} };
+  $("#nl").focus();
+}
+document.addEventListener("keydown",e=>{
+  if(current!=="labs"||!$("[data-n]")||$("[data-n]").disabled) return;
+  if(e.key==="n"||e.key==="N") answerLab(true);
+  if(e.key==="a"||e.key==="A") answerLab(false);
+});
+
+/* ============ AXIS ============ */
+function viewAxis(){
+  S.axis={correct:0,total:0,done:false};
+  const choices=shuffle(AXIS_CHOICES);
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🔁 Build the Hormone Axis</h2>
+   <p>Complete the hypothalamo-pituitary-gonadal axis. Each blank uses a different answer, and some choices are distractors.</p>
+   <div class="axis">${AXIS.map((r,i)=>`<div class="axis-row"><span>${esc(r.pre)}</span>
+     <select data-i="${i}" aria-label="Blank ${i+1}"><option value="">— choose —</option>${choices.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+     <span>${esc(r.post)}</span></div>`).join("")}</div>
+   <div class="row" style="margin-top:16px"><button class="btn" id="checkAxis">Check axis</button></div>
+   <div class="feedback" id="fb"></div></div>`;
+  $("#checkAxis").onclick=()=>{
+    const sels=[...document.querySelectorAll(".axis select")];
+    if(sels.some(s=>!s.value)){toast("Fill every blank first");return}
+    let right=0; sels.forEach(s=>{const ok=s.value===AXIS[+s.dataset.i].ans; if(ok)right++; s.classList.add(ok?"ok":"no"); s.disabled=true;});
+    S.axis.total+=AXIS.length; S.axis.correct+=right; award(right===AXIS.length,15);
+    $("#checkAxis").disabled=true;
+    const fb=$("#fb"); fb.className="feedback show "+(right===AXIS.length?"good":"bad");
+    fb.innerHTML=`<h4>${right===AXIS.length?"✅ Axis complete!":`${right}/${AXIS.length} correct.`}</h4>
+     <div>${AXIS.map(r=>`${esc(r.pre)} <b>${esc(r.ans)}</b> ${esc(r.post)}`).join("<br>")}</div>
+     <div class="pearl"><b>Clinical pearl:</b> Testosterone also feeds back <i>negatively</i> on the hypothalamus and pituitary. That loop is the key to your next patient.</div>
+     <div class="ref">Slides 48–49 · 27.3b Hormonal Control of Male Reproductive Function</div>
+     <div class="row" style="margin-top:12px"><button class="btn" id="toAxisCase">See the patient →</button></div>`;
+    $("#toAxisCase").onclick=axisCase;
+  };
+}
+function axisCase(){
+  const {html}=caseHTML(AXIS_CASE);
+  $("#view").innerHTML=`<div class="card"><h2 style="margin-top:0">🔁 Apply it</h2>${html}</div>`;
+  wireCase(AXIS_CASE, ok=>{S.axis.total++; if(ok)S.axis.correct++; S.axis.done=true; renderTabs(); go("report")});
+}
+
+/* ============ REPORT ============ */
+function viewReport(){
+  const rows=[["Patient Rounds","rounds"],["Sperm Route","route"],["Lab Flags","labs"],["Hormone Axis","axis"]];
+  const c=rows.reduce((a,[,k])=>a+S[k].correct,0), t=rows.reduce((a,[,k])=>a+S[k].total,0);
+  const pct = t? Math.round(c/t*100):0;
+  const stars = t? (pct>=90?5:pct>=80?4:pct>=70?3:pct>=55?2:1):0;
+  const title = !t?"Shift not started": pct>=90?"Attending-level performance":pct>=80?"Chief resident material":pct>=70?"Solid intern shift":pct>=55?"Keep reviewing those charts":"Time for a study session with Ch. 27";
+  const allDone=rows.every(([,k])=>S[k].done);
+  $("#view").innerHTML=`<div class="card report"><h2 style="margin-top:0">📋 Shift Report</h2>
+   <div class="stars" aria-label="${stars} of 5 stars">${"★".repeat(stars)}${"☆".repeat(5-stars)}</div>
+   <p style="font-size:1.1rem;margin:4px 0"><b>${title}</b></p>
+   <p class="muted">Total score <b>${S.score}</b> · ${c}/${t} correct (${pct}%)${allDone?"":" · some stations not finished yet"}</p>
+   <table><thead><tr><th>Station</th><th>Correct</th><th>Status</th></tr></thead><tbody>
+   ${rows.map(([n,k])=>`<tr><td>${n}</td><td class="num">${S[k].correct}/${S[k].total}</td><td>${S[k].done?"✓ Complete":`<button class="btn ghost" data-go="${k}" style="padding:4px 10px">Go</button>`}</td></tr>`).join("")}
+   </tbody></table>
+   <div class="row" style="margin-top:16px"><button class="btn" id="restart">Start a new shift</button></div></div>`;
+  document.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
+  $("#restart").onclick=()=>{Object.assign(S,{score:0,streak:0,rounds:{correct:0,total:0,done:false},route:{correct:0,total:0,done:false},labs:{correct:0,total:0,done:false},axis:{correct:0,total:0,done:false}});roundDeck=[];$("#hudScore").textContent=0;$("#hudStreak").textContent=0;go("home")};
+}
+
+renderTabs(); viewHome();
+</script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two Ducts, One Embryo: Reproductive Tract Development</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f6f8;--card:#fff;--ink:#14232f;--muted:#5b6b78;--line:#d9e2e8;
+  --navy:#1d3a52;--teal:#0f7c7a;--teal-soft:#e2f3f2;
+  --meso:#14a39a;--para:#b0479a;--gonad:#3f6fd8;--gonad2:#e9805a;--sinus:#c9a77a;
+  --good:#1f8a4c;--good-soft:#e5f5ec;--bad:#b8392f;--bad-soft:#fbe9e7;--amber:#b9770e;--amber-soft:#fdf3e1;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button,select{font:inherit}
+button{cursor:pointer}
+.wrap{max-width:1020px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+header h1{margin:0;font-size:1.35rem}
+header p{margin:0;color:var(--muted);font-size:.9rem}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.88rem}
+.chip b{font-family:"DM Mono",monospace}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+nav button{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-weight:500;color:var(--ink)}
+nav button[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+h2{margin:0 0 6px}
+.lead{color:var(--muted);margin:0 0 16px}
+.btn{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.two{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.stage{background:#fbfcfd;border:1px solid var(--line);border-radius:12px;padding:8px}
+svg{width:100%;height:auto;display:block}
+/* svg styles */
+.duct{fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;transition:all .3s}
+.s-meso.duct{stroke:var(--meso)}
+.s-para.duct{stroke:var(--para)}
+.lost{stroke-dasharray:6 7;opacity:.35;stroke-width:4}
+.fillpara{fill:var(--para)}
+.fillmeso{fill:var(--meso)}
+.sinusf{fill:var(--sinus)}
+.sinuss{stroke:var(--sinus)}
+.mesonephros{fill:#f6d3bd}
+.gon{fill:var(--gonad);stroke:var(--gonad2);stroke-width:5}
+svg .s-meso,svg .s-para,svg .s-gon,svg .s-sinus,svg .s-bladder,svg .s-kid,svg .s-neph{transition:opacity .25s,filter .25s}
+svg.hl :is(.s-meso,.s-para,.s-gon,.s-sinus,.s-bladder,.s-kid,.s-neph){opacity:.15}
+svg.hl-meso .s-meso,svg.hl-para .s-para,svg.hl-gon .s-gon,svg.hl-sinus .s-sinus,svg.hl-bladder .s-bladder,svg.hl-kid .s-kid,svg.hl-neph .s-neph{opacity:1!important;filter:drop-shadow(0 0 4px rgba(0,0,0,.35))}
+.svglabel{font:600 11px "DM Sans";fill:var(--muted)}
+/* timeline */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:none;background:#fff;padding:8px 12px;color:var(--ink);font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.legend{display:grid;gap:6px;margin-top:10px}
+.lg{display:flex;gap:10px;align-items:flex-start;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink)}
+.lg:hover,.lg.on{border-color:var(--teal);background:var(--teal-soft)}
+.sw{width:14px;height:14px;border-radius:4px;flex:none;margin-top:4px}
+.lg small{display:block;color:var(--muted)}
+.callout{background:var(--amber-soft);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:.95rem}
+.callout b{color:var(--amber)}
+.keyidea{background:var(--teal-soft);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;padding:10px 14px;margin:12px 0}
+/* fate map */
+.bank{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fafcfd;min-height:56px}
+.tile{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-weight:500;color:var(--ink)}
+.tile.sel{border-color:var(--navy);background:var(--navy);color:#fff}
+.tile.ok{border-color:var(--good);background:var(--good-soft)}
+.tile.no{border-color:var(--bad);background:var(--bad-soft)}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:14px}
+.bin{border:2px solid var(--line);border-radius:12px;padding:10px;background:#fff;min-height:120px;text-align:left;color:var(--ink)}
+.bin.ready{border-style:dashed;border-color:var(--navy);background:#f1f5f9}
+.bin h3{margin:0 0 2px;font-size:1rem;display:flex;gap:8px;align-items:center}
+.bin p{margin:0 0 8px;color:var(--muted);font-size:.82rem}
+.bin .tiles{display:flex;flex-wrap:wrap;gap:6px}
+.bin .tile{font-size:.88rem;padding:5px 10px}
+/* switchboard */
+.ctrls{display:grid;gap:10px}
+.ctrl{background:#f6f9fb;border-radius:10px;padding:10px 12px}
+.ctrl label{font-weight:700;display:block;margin-bottom:6px}
+.ctrl .seg button{font-size:.88rem;padding:6px 10px}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.86rem;margin:6px 0}
+.node{border-radius:999px;padding:4px 10px;border:1.5px solid var(--line);background:#fff}
+.node.on{border-color:var(--good);background:var(--good-soft)}
+.node.off{border-color:var(--bad);background:var(--bad-soft);text-decoration:line-through;color:var(--bad)}
+.arr{color:var(--muted)}
+.outcome{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:12px}
+.outcome .oh{background:var(--navy);color:#fff;padding:8px 14px;font-weight:700}
+.outcome table{width:100%;border-collapse:collapse;font-size:.92rem}
+.outcome td{padding:7px 12px;border-bottom:1px solid var(--line)}
+.outcome td:first-child{color:var(--muted);width:42%}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.presets button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:.85rem;color:var(--ink)}
+.presets button:hover{border-color:var(--teal)}
+.tag{font-family:"DM Mono",monospace;font-size:.72rem;background:var(--amber-soft);color:var(--amber);border-radius:6px;padding:2px 6px;margin-left:6px}
+/* quiz */
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--teal);background:var(--teal-soft)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{display:none;margin-top:12px;border-radius:10px;padding:12px 14px}
+.fb.show{display:block}.fb.good{background:var(--good-soft)}.fb.bad{background:var(--bad-soft)}
+.fb h4{margin:0 0 4px}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 14px}
+.progress>div{height:100%;background:var(--teal);transition:width .3s}
+.scen{background:#f6f9fb;border-radius:10px;padding:12px 14px;font-size:1rem}
+.mini{max-width:320px;margin:10px auto 0}
+.muted{color:var(--muted)}.small{font-size:.88rem}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:999px;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Two Ducts, One Embryo</h1><p>How the reproductive tracts develop · Saladin A&amp;P 10e, Chapter 27 (Fig. 27.3)</p></div>
+  <div class="chip">Score <b id="score">0</b></div>
+</header>
+<nav id="tabs" role="tablist"></nav>
+<main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ================= SVG DRAWINGS (original schematics) ================= */
+// Left half drawn, right half mirrored
+function mirror(inner){return `<g>${inner}</g><g transform="translate(400,0) scale(-1,1)">${inner}</g>`}
+
+function drawIndifferent(){
+  const half = `
+    <ellipse class="s-neph mesonephros" cx="122" cy="105" rx="34" ry="62"/>
+    <ellipse class="s-gon gon" cx="128" cy="100" rx="11" ry="34"/>
+    <ellipse class="s-kid" cx="140" cy="205" rx="20" ry="14" fill="#b07a5a"/>
+    <path class="duct s-meso" d="M140 48 C150 120,148 200,186 262"/>
+    <path class="duct s-para" d="M92 44 C88 140,128 215,192 266"/>`;
+  return `<svg viewBox="0 0 400 340" role="img" aria-label="Schematic of the sexually indifferent embryo with both duct pairs">
+    ${mirror(half)}
+    <path class="s-sinus sinusf" d="M186 250 Q200 215 214 250 L214 300 Q200 330 186 300 Z"/>
+    <text class="svglabel" x="200" y="326" text-anchor="middle">cloaca / urogenital sinus</text>
+  </svg>`;
+}
+
+// parametric "differentiating" view; used by timeline AND the switchboard
+function drawDiff({gonad="testis", meso="keep", para="lose"}={}){
+  const gon = gonad==="testis"
+    ? `<path class="s-gon gon" d="M118 70 q14 -6 22 8 q10 14 0 32 q-8 16 -22 10 q-12 -8 -8 -26 q2 -18 8 -24z"/>`
+    : gonad==="ovary"
+    ? `<ellipse class="s-gon gon" cx="128" cy="96" rx="15" ry="24"/><path class="s-gon" d="M122 86 q6 10 0 20" stroke="#cfe0ff" stroke-width="2" fill="none"/>`
+    : `<ellipse class="s-gon gon" cx="128" cy="96" rx="10" ry="30"/>`;
+  const mesoPath = meso==="keep"
+    ? `<path class="duct s-meso" d="M140 80 q14 8 0 16 q-14 8 0 16 q14 8 0 16 C150 175,160 225,184 262"/>
+       <ellipse class="s-meso fillmeso" cx="174" cy="250" rx="9" ry="6" transform="rotate(-35 174 250)"/>
+       <path class="duct s-meso" style="stroke-width:3" d="M136 92 l-8 -2 M136 100 l-8 0 M136 108 l-8 2"/>`
+    : `<path class="duct s-meso lost" d="M140 60 C152 130,152 200,184 262"/>`;
+  const paraPath = para==="keep"
+    ? `<path class="duct s-para" d="M84 44 C82 120,120 175,196 190"/>
+       <path class="s-para fillpara" d="M176 180 Q200 172 224 180 L214 255 Q200 270 186 255 Z"/>
+       <path class="s-para fillpara" d="M78 40 l14 -4 l-2 14 z"/>`
+    : `<path class="duct s-para lost" d="M90 44 C86 140,128 215,192 266"/>`;
+  const bladder = para==="keep"
+    ? `<ellipse class="s-bladder sinusf" cx="${meso==='keep'?120:132}" cy="272" rx="20" ry="13" transform="rotate(-25 ${meso==='keep'?120:132} 272)"/><text class="svglabel" x="${meso==='keep'?90:100}" y="304">bladder (aside)</text>`
+    : `<ellipse class="s-bladder sinusf" cx="200" cy="232" rx="24" ry="34"/>`;
+  const half = gon + mesoPath + (para==="keep" ? `<path class="duct s-para" d="M84 44 C82 120,120 175,196 190"/><path class="s-para fillpara" d="M78 40 l14 -4 l-2 14 z"/>` : paraPath);
+  return `<svg viewBox="0 0 400 340" role="img" aria-label="Schematic of differentiating reproductive ducts">
+    ${mirror(half)}
+    ${para==="keep"?`<path class="s-para fillpara" d="M176 180 Q200 172 224 180 L214 255 Q200 270 186 255 Z"/>`:''}
+    ${bladder}
+    <path class="s-sinus sinusf" d="M192 262 L208 262 L206 330 L194 330 Z"/>
+  </svg>`;
+}
+
+function drawBirthMale(){
+  const half = `
+    <path class="duct s-meso" d="M150 300 C100 250,104 120,160 104 C178 100,184 120,188 150"/>
+    <ellipse class="s-meso fillmeso" cx="170" cy="128" rx="12" ry="7" transform="rotate(-40 170 128)"/>
+    <ellipse class="s-gon gon" cx="150" cy="318" rx="20" ry="26"/>
+    <path class="duct s-meso" style="stroke-width:5" d="M130 300 q-10 8 0 16 q10 8 0 16 q-10 8 2 14"/>`;
+  return `<svg viewBox="0 0 400 380" role="img" aria-label="Schematic of male tract at birth">
+    ${mirror(half)}
+    <ellipse class="s-bladder sinusf" cx="200" cy="80" rx="28" ry="40"/>
+    <circle class="s-sinus" cx="200" cy="165" r="17" fill="#d9b991"/>
+    <circle class="s-sinus" cx="186" cy="200" r="5" fill="#d9b991"/><circle class="s-sinus" cx="214" cy="200" r="5" fill="#d9b991"/>
+    <path class="duct sinuss s-sinus" style="stroke-width:7" d="M200 118 L200 360"/>
+    <text class="svglabel" x="226" y="170">prostate</text>
+  </svg>`;
+}
+function drawBirthFemale(){
+  const half = `
+    <path class="duct s-para" style="stroke-width:9" d="M178 120 C150 96,110 90,70 112"/>
+    <path class="s-para fillpara" d="M62 102 l-10 6 l8 6 l-8 6 l12 2 z"/>
+    <ellipse class="s-gon gon" cx="108" cy="140" rx="22" ry="13"/>`;
+  return `<svg viewBox="0 0 400 380" role="img" aria-label="Schematic of female tract at birth">
+    ${mirror(half)}
+    <path class="s-para fillpara" d="M170 110 Q200 100 230 110 Q232 180 214 228 L186 228 Q168 180 170 110 Z"/>
+    <path class="s-para fillpara" d="M188 228 L212 228 L211 270 L189 270 Z"/>
+    <path class="s-sinus sinusf" d="M189 270 L211 270 L218 340 L182 340 Z"/>
+    <ellipse class="s-bladder sinusf" cx="140" cy="280" rx="26" ry="16" transform="rotate(-35 140 280)"/>
+    <path class="duct sinuss s-sinus" style="stroke-width:4" d="M160 292 Q178 315 186 338"/>
+    <text class="svglabel" x="226" y="300">vagina</text>
+  </svg>`;
+}
+
+/* ================= DATA ================= */
+const C={meso:"var(--meso)",para:"var(--para)",gon:"var(--gonad)",sinus:"var(--sinus)",bladder:"#c9a77a",kid:"#b07a5a",neph:"#f6d3bd"};
+const STAGES = {
+ indiff:{title:"5–6 weeks · Sexually indifferent stage", draw:drawIndifferent,
+   key:"Every embryo, XX or XY, starts with BOTH duct systems. Nothing has been decided yet.",
+   legend:[
+    ["gon","Gonadal ridge","Will become a testis OR an ovary. It is identical in both sexes at this point."],
+    ["meso","Mesonephric (Wolffian) duct","The future MALE duct. Mnemonic: <b>M</b>esonephric = <b>M</b>ale."],
+    ["para","Paramesonephric (müllerian) duct","The future FEMALE duct. It runs <i>beside</i> (para-) the mesonephric duct."],
+    ["neph","Mesonephros","Temporary embryonic kidney that the mesonephric duct originally drains."],
+    ["kid","Kidney (developing)","The permanent kidney, forming below."],
+    ["sinus","Cloaca / urogenital sinus","Shared exit chamber. It will form the urethra (and lower vagina in females)."]]},
+ male1:{title:"7–8 weeks · Male", draw:()=>drawDiff({gonad:"testis",meso:"keep",para:"lose"}),
+   key:"The testes switch on. Testosterone KEEPS the mesonephric duct, and MIF DESTROYS the paramesonephric duct.",
+   legend:[
+    ["gon","Testes","SRY gene → TDF → testis. It secretes testosterone and MIF starting at 8–9 weeks."],
+    ["meso","Mesonephric duct (developing)","Becomes the efferent ductules, epididymis, ductus deferens and seminal vesicle."],
+    ["para","Paramesonephric duct (degenerating)","Dashed because it's disappearing. Müllerian-inhibiting factor (MIF) from the testis causes this."],
+    ["bladder","Urinary bladder","Stays in the midline."],
+    ["sinus","Urogenital sinus → urethra","Forms the male urethra."]]},
+ male2:{title:"At birth · Male", draw:drawBirthMale,
+   key:"Every male duct you see here traces back to the mesonephric duct. The paramesonephric duct is gone.",
+   legend:[
+    ["gon","Testis","Has descended into the scrotum (gonadal ridge origin)."],
+    ["meso","Epididymis, ductus deferens, seminal vesicle","All of these come from the mesonephric duct."],
+    ["bladder","Urinary bladder",""],
+    ["sinus","Urethra, prostate, bulbourethral glands","The urethra comes from the urogenital sinus. The prostate and bulbourethral glands bud off the urethra (beyond Fig. 27.3)."]]},
+ fem1:{title:"8–9 weeks · Female", draw:()=>drawDiff({gonad:"ovary",meso:"lose",para:"keep"}),
+   key:"No testes means no testosterone and no MIF. The mesonephric duct withers, and the paramesonephric ducts survive and FUSE in the midline.",
+   legend:[
+    ["gon","Ovaries","Form when there is no SRY gene."],
+    ["para","Paramesonephric ducts","The upper unfused parts become the uterine tubes. The lower parts fuse to form the uterus (and upper vagina)."],
+    ["meso","Mesonephric duct (degenerating)","Dashed because it's disappearing. There's no testosterone to keep it alive."],
+    ["bladder","Urinary bladder (moved aside)","Pushed aside as the fused ducts form the uterus."],
+    ["sinus","Urogenital sinus","Forms the urethra AND the lower vagina."]]},
+ fem2:{title:"At birth · Female", draw:drawBirthFemale,
+   key:"The uterine tubes, uterus and upper vagina come from the paramesonephric ducts. The mesonephric duct is gone.",
+   legend:[
+    ["gon","Ovaries","Descended only slightly, to the brim of the lesser pelvis."],
+    ["para","Uterine tubes, uterus, upper vagina","All from the paramesonephric ducts. The fused midline portion is the uterus."],
+    ["sinus","Lower vagina, urethra, vestibule","From the urogenital sinus."],
+    ["bladder","Urinary bladder (moved aside)",""]]}
+};
+
+const FATE_BINS=[
+ {id:"gon",name:"Gonadal ridge",color:C.gon,hint:"The gonad itself"},
+ {id:"meso",name:"Mesonephric duct",color:C.meso,hint:"Kept by testosterone"},
+ {id:"para",name:"Paramesonephric duct",color:C.para,hint:"Kept when there's no MIF"},
+ {id:"sinus",name:"Urogenital sinus",color:C.sinus,hint:"Shared exit chamber"}];
+const FATE_ITEMS=[
+ ["Testis","gon"],["Ovary","gon"],
+ ["Efferent ductules","meso"],["Epididymis","meso"],["Ductus deferens","meso"],["Seminal vesicle","meso"],
+ ["Uterine tube","para"],["Uterus","para"],["Upper vagina","para"],
+ ["Male urethra","sinus"],["Female urethra","sinus"],["Lower vagina","sinus"],["Urinary bladder","sinus"]];
+
+const QUIZ=[
+ {s:"An XY embryo with a normal SRY gene, normal testosterone receptors and normal MIF.", set:{xy:"XY",sry:true,rec:true,mif:true,ags:false},
+  q:"Which duct system survives?", o:["Mesonephric only","Paramesonephric only","Both","Neither"],a:0,
+  ex:"Testosterone keeps the mesonephric duct, and MIF destroys the paramesonephric duct. This is typical male development."},
+ {s:"An XX embryo with no Y chromosome and no unusual hormone exposure.", set:{xy:"XX",sry:false,rec:true,mif:true,ags:false},
+  q:"Which duct system survives?", o:["Mesonephric only","Paramesonephric only","Both","Neither"],a:1,
+  ex:"No SRY means no testis, so there's no testosterone (the mesonephric duct degenerates) and no MIF (the paramesonephric duct survives)."},
+ {s:"True or false: female ducts develop because estrogen actively builds them.", set:{xy:"XX",sry:false,rec:true,mif:true,ags:false},
+  q:"Choose the best answer.", o:["True. Estrogen drives paramesonephric development","False. Female development results from the ABSENCE of androgens (and MIF)","True. Ovaries secrete MIF","False. Testosterone builds the female ducts"],a:1,
+  ex:"Estrogen levels are always high during pregnancy (from the mother and placenta), so estrogen can't be the switch. What decides is whether testosterone and MIF are present."},
+ {s:"XY with a normal SRY gene and normal testes that secrete testosterone and MIF, but body cells LACK testosterone receptors (androgen insensitivity syndrome).", set:{xy:"XY",sry:true,rec:false,mif:true,ags:false},
+  q:"Which duct system survives?", o:["Mesonephric only","Paramesonephric only","Both","Neither"],a:3,
+  ex:"Neither! Without receptors, testosterone can't keep the mesonephric duct. But MIF still works, so the paramesonephric duct degenerates too. That's why people with AIS have testes but no uterus."},
+ {s:"XX, but the SRY gene was transferred onto one X chromosome in the father's sperm.", set:{xy:"XX",sry:true,rec:true,mif:true,ags:false},
+  q:"What kind of gonad and duct system develop?", o:["Ovaries; paramesonephric ducts","Testes; mesonephric ducts","Ovaries; mesonephric ducts","Testes; both duct systems"],a:1,
+  ex:"SRY, not the Y chromosome as a whole, is the switch. SRY → TDF → testes → testosterone + MIF, so development follows the male pattern."},
+ {s:"XX fetus exposed to abnormally high androgens from its own adrenal glands (adrenogenital syndrome, AGS).", set:{xy:"XX",sry:false,rec:true,mif:true,ags:true},
+  q:"What happens?", o:["Testes form and male ducts develop","Ovaries and uterus form, but the external genitalia are masculinized","No ducts survive","Both duct systems survive with testes"],a:1,
+  ex:"There's no SRY, so ovaries form and there's no MIF, which means the uterus develops. The excess androgens act mainly on the external genitalia, which develop from the same tissues in both sexes."},
+ {s:"XY with normal testes and testosterone receptors, but the testes fail to make MIF.", set:{xy:"XY",sry:true,rec:true,mif:false,ags:false}, beyond:true,
+  q:"Predict the internal ducts.", o:["Mesonephric only","Paramesonephric only","Both","Neither"],a:2,
+  ex:"Testosterone keeps the mesonephric duct, but with no MIF the paramesonephric duct isn't destroyed either. Clinically (persistent müllerian duct syndrome), a uterus and tubes may be found by surprise during inguinal hernia or undescended-testis surgery."},
+ {s:"A 6-week embryo is examined. Its karyotype is unknown.", set:null,
+  q:"What would you expect to see?", o:["Only mesonephric ducts","Only paramesonephric ducts","Both duct pairs plus undifferentiated gonadal ridges","Fully formed testes or ovaries"],a:2,
+  ex:"At 5–6 weeks every embryo is in the sexually indifferent stage. It has both duct pairs and gonadal ridges that look the same in both sexes."},
+];
+
+/* ================= STATE / UTIL ================= */
+let score=0, tab="explore";
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function addScore(n){score+=n;$("#score").textContent=score}
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800)}
+const TABS=[["explore","1 · Watch It Develop"],["fate","2 · Fate Map"],["switch","3 · Signal Switchboard"],["quiz","4 · Predict the Outcome"]];
+function renderTabs(){ $("#tabs").innerHTML=TABS.map(([id,l])=>`<button role="tab" aria-selected="${id===tab}" data-t="${id}">${l}</button>`).join("");
+  document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;renderTabs();({explore:viewExplore,fate:viewFate,switch:viewSwitch,quiz:viewQuiz})[tab]()});}
+
+/* ================= 1 · EXPLORE ================= */
+let path="male", step=0;
+function stageKey(){return step===0?"indiff":(path==="male"?(step===1?"male1":"male2"):(step===1?"fem1":"fem2"))}
+function viewExplore(){
+  const st=STAGES[stageKey()];
+  $("#view").innerHTML=`<div class="card">
+   <h2>Watch it develop</h2>
+   <p class="lead">Follow the color code. <b style="color:var(--meso)">Teal = mesonephric (male)</b> and <b style="color:var(--para)">purple = paramesonephric (female)</b>. Dashed ducts are degenerating. Tap any label to highlight that structure.</p>
+   <div class="row" style="margin-bottom:12px">
+     <div class="seg" role="group" aria-label="Pathway">
+       <button aria-pressed="${path==='male'}" data-p="male">♂ Male pathway</button>
+       <button aria-pressed="${path==='female'}" data-p="female">♀ Female pathway</button>
+     </div>
+     <div class="seg" role="group" aria-label="Time">
+       <button aria-pressed="${step===0}" data-s="0">5–6 wk</button>
+       <button aria-pressed="${step===1}" data-s="1">${path==='male'?'7–8':'8–9'} wk</button>
+       <button aria-pressed="${step===2}" data-s="2">Birth</button>
+     </div>
+   </div>
+   <div class="two">
+     <div class="stage">${st.draw()}</div>
+     <div>
+       <h3 style="margin:0">${st.title}</h3>
+       <div class="keyidea">${st.key}</div>
+       <div class="legend">${st.legend.map(([k,n,d])=>`<button class="lg" data-k="${k}"><span class="sw" style="background:${C[k]}"></span><span><b>${n}</b>${d?`<small>${d}</small>`:''}</span></button>`).join("")}</div>
+       <div class="row" style="margin-top:14px">
+         <button class="btn ghost" id="prev" ${step===0?'disabled':''}>← Back</button>
+         <button class="btn" id="next">${step<2?'Next stage →':(path==='male'?'Now try the female pathway →':'On to the Fate Map →')}</button>
+       </div>
+     </div>
+   </div>
+   ${step===0?`<div class="callout"><b>The big idea:</b> the embryo doesn't build one tract. It builds the starter kit for both and then <i>throws one away</i>. The real question is which duct gets kept and why.</div>`:''}
+  </div>`;
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{path=b.dataset.p;viewExplore()});
+  document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{step=+b.dataset.s;viewExplore()});
+  $("#prev").onclick=()=>{step--;viewExplore()};
+  $("#next").onclick=()=>{ if(step<2){step++;viewExplore()} else if(path==="male"){path="female";step=0;viewExplore()} else {tab="fate";renderTabs();viewFate()} };
+  const svg=$(".stage svg");
+  document.querySelectorAll(".lg").forEach(b=>b.onclick=()=>{
+    const on=b.classList.contains("on");
+    document.querySelectorAll(".lg").forEach(x=>x.classList.remove("on"));
+    svg.setAttribute("class","");
+    if(!on){b.classList.add("on");svg.setAttribute("class","hl hl-"+b.dataset.k)}
+  });
+}
+
+/* ================= 2 · FATE MAP ================= */
+let fate={}, sel=null, fateChecked=false;
+function viewFate(){fate={};sel=null;fateChecked=false;renderFate()}
+function renderFate(){
+  const unplaced=FATE_ITEMS.filter(([n])=>!fate[n]);
+  $("#view").innerHTML=`<div class="card">
+   <h2>Fate Map: where did it come from?</h2>
+   <p class="lead">Every adult structure traces back to one embryonic origin. <b>Tap a structure, then tap the origin it came from.</b> Tap a placed tile to move it back.</p>
+   <div class="bank" aria-label="Unsorted structures">${shuffleStable(unplaced).map(([n])=>`<button class="tile ${sel===n?'sel':''}" data-n="${n}">${n}</button>`).join("")||'<span class="muted small">All sorted. Check your map!</span>'}</div>
+   <div class="bins">${FATE_BINS.map(b=>`<button class="bin ${sel?'ready':''}" data-b="${b.id}">
+      <h3><span class="sw" style="background:${b.color}"></span>${b.name}</h3><p>${b.hint}</p>
+      <div class="tiles">${FATE_ITEMS.filter(([n])=>fate[n]===b.id).map(([n,a])=>`<span class="tile ${fateChecked?(a===b.id?'ok':'no'):''}" data-back="${n}">${n}</span>`).join("")}</div></button>`).join("")}</div>
+   <div class="row" style="margin-top:14px"><button class="btn" id="checkF" ${unplaced.length||fateChecked?'disabled':''}>Check my fate map</button><button class="btn ghost" id="resetF">Reset</button></div>
+   <div class="fb" id="fb"></div></div>`;
+  document.querySelectorAll("[data-n]").forEach(t=>t.onclick=()=>{sel=sel===t.dataset.n?null:t.dataset.n;renderFate()});
+  document.querySelectorAll("[data-b]").forEach(b=>b.onclick=e=>{
+    const back=e.target.closest("[data-back]");
+    if(back&&!fateChecked){delete fate[back.dataset.back];renderFate();return}
+    if(sel&&!fateChecked){fate[sel]=b.dataset.b;sel=null;renderFate()}
+    else if(!sel&&!fateChecked) toast("Tap a structure first");
+  });
+  $("#resetF").onclick=viewFate;
+  $("#checkF").onclick=()=>{
+    fateChecked=true; const right=FATE_ITEMS.filter(([n,a])=>fate[n]===a).length;
+    addScore(right*3); renderFate();
+    const fb=$("#fb"); fb.className="fb show "+(right===FATE_ITEMS.length?"good":"bad");
+    fb.innerHTML=`<h4>${right}/${FATE_ITEMS.length} correct${right===FATE_ITEMS.length?" 🎉":""}</h4>
+     <div class="small">Red tiles are in the wrong bin. Patterns to remember:<br>
+     • <b>Mesonephric = Male ducts:</b> efferent ductules, epididymis, ductus deferens, seminal vesicle.<br>
+     • <b>Paramesonephric = female ducts:</b> uterine tubes (unfused tops), uterus (fused bottoms), upper vagina.<br>
+     • <b>Urogenital sinus is shared by both:</b> urethra and bladder, plus the lower vagina in females.<br>
+     • <b>Gonads are their own thing:</b> both the testis and the ovary come from the gonadal ridge, not from either duct.</div>
+     <div class="row" style="margin-top:10px"><button class="btn" id="toSw">Next: the switchboard →</button></div>`;
+    $("#toSw").onclick=()=>{tab="switch";renderTabs();viewSwitch()};
+  };
+}
+let _order=null; function shuffleStable(arr){ if(!_order) _order=shuffle(FATE_ITEMS.map(x=>x[0])); return [...arr].sort((a,b)=>_order.indexOf(a[0])-_order.indexOf(b[0])) }
+
+/* ================= 3 · SWITCHBOARD ================= */
+let sw={xy:"XY",sry:true,rec:true,mif:true,ags:false};
+function derive(s){
+  const testis=s.sry, T=testis, act=(T||s.ags)&&s.rec;
+  const meso = T&&s.rec ? "keep":"lose";
+  const para = testis&&s.mif ? "lose":"keep";
+  const gonad = testis?"testis":"ovary";
+  const ext = act ? (testis?"Male":"Masculinized (ambiguous)") : "Female";
+  let name="", beyond=false;
+  if(testis&&s.rec&&s.mif) name = s.xy==="XX"?"XX male (SRY transferred to an X chromosome)":"Typical male development";
+  else if(testis&&!s.rec&&s.mif) name="Androgen insensitivity syndrome (AIS)";
+  else if(testis&&s.rec&&!s.mif){name="Persistent müllerian duct syndrome";beyond=true}
+  else if(testis&&!s.rec&&!s.mif){name="AIS with no MIF (both signals lost)";beyond=true}
+  else if(!testis&&s.ags&&s.rec) name="Adrenogenital syndrome (AGS)";
+  else if(!testis&&s.xy==="XY"){name="XY with SRY missing (develops as female)";beyond=true}
+  else name="Typical female development";
+  return {testis,T,act,meso,para,gonad,ext,name,beyond};
+}
+const PRESETS=[
+ ["Typical male",{xy:"XY",sry:true,rec:true,mif:true,ags:false}],
+ ["Typical female",{xy:"XX",sry:false,rec:true,mif:true,ags:false}],
+ ["AIS",{xy:"XY",sry:true,rec:false,mif:true,ags:false}],
+ ["SRY on an X",{xy:"XX",sry:true,rec:true,mif:true,ags:false}],
+ ["AGS",{xy:"XX",sry:false,rec:true,mif:true,ags:true}],
+ ["No MIF",{xy:"XY",sry:true,rec:true,mif:false,ags:false}]];
+function seg(key,opts){return `<div class="seg">${opts.map(([v,l])=>`<button aria-pressed="${sw[key]===v}" data-k="${key}" data-v='${JSON.stringify(v)}'>${l}</button>`).join("")}</div>`}
+function viewSwitch(){
+  const d=derive(sw);
+  const node=(t,on)=>`<span class="node ${on?'on':'off'}">${t}</span>`;
+  $("#view").innerHTML=`<div class="card">
+   <h2>Signal Switchboard</h2>
+   <p class="lead">Development is a chain of signals. Flip the switches to see which link breaks and what the ducts do. Try the presets, including real conditions from the slides.</p>
+   <div class="presets">${PRESETS.map(([n],i)=>`<button data-pr="${i}">${n}</button>`).join("")}</div>
+   <div class="two">
+    <div class="ctrls">
+      <div class="ctrl"><label>Sex chromosomes</label>${seg("xy",[["XX","XX"],["XY","XY"]])}</div>
+      <div class="ctrl"><label>SRY gene present?</label>${seg("sry",[[true,"Yes"],[false,"No"]])}<div class="small muted" style="margin-top:4px">Normally only on the Y chromosome, but it can be transferred to an X or lost.</div></div>
+      <div class="ctrl"><label>Testosterone receptors</label>${seg("rec",[[true,"Functional"],[false,"Absent"]])}</div>
+      <div class="ctrl"><label>MIF from the testes</label>${seg("mif",[[true,"Normal"],[false,"Absent"]])}<div class="small muted" style="margin-top:4px">Only matters if testes exist.</div></div>
+      <div class="ctrl"><label>Adrenal androgens</label>${seg("ags",[[false,"Normal"],[true,"Excessive"]])}</div>
+    </div>
+    <div>
+      <div class="small muted"><b>Male-duct chain</b></div>
+      <div class="chain">${node("SRY",sw.sry)}<span class="arr">→</span>${node("TDF",sw.sry)}<span class="arr">→</span>${node("Testis",d.testis)}<span class="arr">→</span>${node("Testosterone",d.T)}<span class="arr">→</span>${node("Receptors",sw.rec&&d.T)}<span class="arr">→</span>${node("Mesonephric kept",d.meso==="keep")}</div>
+      <div class="small muted" style="margin-top:6px"><b>Female-duct chain</b></div>
+      <div class="chain">${node("Testis",d.testis)}<span class="arr">→</span>${node("MIF",d.testis&&sw.mif)}<span class="arr">→</span>${node("Paramesonephric destroyed",d.para==="lose")}</div>
+      <div class="stage mini">${drawDiff({gonad:d.gonad,meso:d.meso,para:d.para})}</div>
+      <div class="outcome"><div class="oh">${d.name}${d.beyond?'<span class="tag">beyond the slides</span>':''}</div>
+        <table>
+         <tr><td>Gonads</td><td>${d.testis?"Testes":"Ovaries"}</td></tr>
+         <tr><td>Mesonephric duct</td><td>${d.meso==="keep"?"✅ Develops (epididymis, ductus deferens, seminal vesicle)":"❌ Degenerates"}</td></tr>
+         <tr><td>Paramesonephric duct</td><td>${d.para==="keep"?"✅ Develops (uterine tubes, uterus, upper vagina)":"❌ Degenerates"}</td></tr>
+         <tr><td>External genitalia</td><td>${d.ext}</td></tr>
+        </table></div>
+    </div>
+   </div>
+   <div class="callout"><b>Notice:</b> the two ducts are controlled by <i>two different signals</i>. Testosterone decides the fate of the mesonephric duct, and MIF decides the fate of the paramesonephric duct. Breaking just one link gives some surprising results.</div>
+   <div class="row" style="margin-top:14px"><button class="btn" id="toQ">Test yourself →</button></div>
+  </div>`;
+  document.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k, v=JSON.parse(b.dataset.v); sw[k]=v;
+    if(k==="xy") sw.sry = v==="XY"; // chromosome change resets SRY to its usual state
+    viewSwitch();
+  });
+  document.querySelectorAll("[data-pr]").forEach(b=>b.onclick=()=>{sw={...PRESETS[+b.dataset.pr][1]};viewSwitch()});
+  $("#toQ").onclick=()=>{tab="quiz";renderTabs();viewQuiz()};
+}
+
+/* ================= 4 · QUIZ ================= */
+let qi=0, qRight=0, deck=[];
+function viewQuiz(){qi=0;qRight=0;deck=QUIZ.map(q=>({...q,opts:shuffle(q.o.map((t,i)=>({t,i})))}));renderQ()}
+function renderQ(){
+  if(qi>=deck.length){
+    const pct=Math.round(qRight/deck.length*100);
+    $("#view").innerHTML=`<div class="card"><h2>Results</h2><p style="font-size:1.1rem"><b>${qRight}/${deck.length}</b> correct (${pct}%) · total score <b>${score}</b></p>
+     <p class="muted">${pct>=85?"You can read Figure 27.3 like a pro.":pct>=60?"Almost there. Revisit the Switchboard and focus on which signal controls which duct.":"Go back to Watch It Develop and follow the colors one stage at a time."}</p>
+     <div class="row"><button class="btn" id="again">Try again</button><button class="btn ghost" id="back">Back to the start</button></div></div>`;
+    $("#again").onclick=viewQuiz; $("#back").onclick=()=>{tab="explore";step=0;path="male";renderTabs();viewExplore()};
+    return;
+  }
+  const q=deck[qi];
+  $("#view").innerHTML=`<div class="card">
+   <div class="row small muted" style="justify-content:space-between"><span>Question ${qi+1} of ${deck.length}</span><span>${qRight} correct</span></div>
+   <div class="progress"><div style="width:${qi/deck.length*100}%"></div></div>
+   <div class="scen">🧬 ${q.s}${q.beyond?'<span class="tag">beyond the slides</span>':''}</div>
+   <p style="font-weight:700;margin:14px 0 0">${q.q}</p>
+   <div class="opts">${q.opts.map((o,k)=>`<button class="opt" data-i="${o.i}">${String.fromCharCode(65+k)}. ${o.t}</button>`).join("")}</div>
+   <div class="fb" id="fb"></div></div>`;
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const ok=+b.dataset.i===q.a; if(ok){qRight++;addScore(10)}
+    document.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.i===q.a)x.classList.add("right")}); if(!ok)b.classList.add("wrong");
+    let pic="";
+    if(q.set){const d=derive(q.set);pic=`<div class="stage mini">${drawDiff({gonad:d.gonad,meso:d.meso,para:d.para})}</div>`}
+    else pic=`<div class="stage mini">${drawIndifferent()}</div>`;
+    const fb=$("#fb"); fb.className="fb show "+(ok?"good":"bad");
+    fb.innerHTML=`<h4>${ok?"✅ Correct":"❌ Not quite"}</h4><div>${q.ex}</div>${pic}
+     <div class="row" style="margin-top:10px"><button class="btn" id="nq">${qi===deck.length-1?"See results":"Next →"}</button></div>`;
+    $("#nq").onclick=()=>{qi++;renderQ()}; $("#nq").focus();
+  });
+}
+
+renderTabs(); viewExplore();
+</script>
+</body>
+</html>
